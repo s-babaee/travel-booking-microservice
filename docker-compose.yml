@@ -1,0 +1,16 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-server
+    ports:
+      - "5672:5672" # پورت ارتباطی با اپلیکیشن
+      - "15672:15672" # پورت پنل مدیریتی (در مرورگر)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - travel-network
+
+networks:
+  travel-network:
+    driver: bridge

@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BuildingBlocks/BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Booking/">
+    <Project Path="src/Services/Booking/Booking.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Flight/">
+    <Project Path="src/Services/Flight/Flight.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Hotel/">
+    <Project Path="src/Services/Hotel/Hotel.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Notification/">
+    <Project Path="src/Services/Notification/Notification.Worker.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Payment/">
+    <Project Path="src/Services/Payment/Payment.Api.csproj" />
+  </Folder>
+</Solution>
