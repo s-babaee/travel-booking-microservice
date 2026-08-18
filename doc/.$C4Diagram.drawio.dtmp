@@ -1,0 +1,66 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="tpbFjfOYKiU9-JiDRJI8">
+    <mxGraphModel dx="2211" dy="1523" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-12" edge="1" parent="1" source="2RERJAn-J4RpR0lwwBXI-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" target="2RERJAn-J4RpR0lwwBXI-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-15" connectable="0" parent="2RERJAn-J4RpR0lwwBXI-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="درخواست پرداخت و اعلام نتیجه" vertex="1">
+          <mxGeometry relative="1" x="0.0485" y="3" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-13" edge="1" parent="1" source="2RERJAn-J4RpR0lwwBXI-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="2RERJAn-J4RpR0lwwBXI-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-14" connectable="0" parent="2RERJAn-J4RpR0lwwBXI-13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="ارسال اعلان یا پیامک" vertex="1">
+          <mxGeometry relative="1" x="0.1293" y="2" as="geometry">
+            <mxPoint x="11" y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-1" parent="1" style="html=1;whiteSpace=wrap;" value="پلتفرم رزرو هتل و پرواز" vertex="1">
+          <mxGeometry height="90" width="160" x="160" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-6" edge="1" parent="1" source="2RERJAn-J4RpR0lwwBXI-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="2RERJAn-J4RpR0lwwBXI-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="130" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-7" connectable="0" parent="2RERJAn-J4RpR0lwwBXI-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="جست‌وجو، دیدن جزئیات، رزرو&lt;br&gt;&amp;nbsp;پرداخت، لغو، دیدن رزروها" vertex="1">
+          <mxGeometry relative="1" x="0.5028" y="-2" as="geometry">
+            <mxPoint x="-55" y="-22" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="مشتری" vertex="1">
+          <mxGeometry height="60" width="30" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-8" edge="1" parent="1" source="2RERJAn-J4RpR0lwwBXI-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="2RERJAn-J4RpR0lwwBXI-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-9" connectable="0" parent="2RERJAn-J4RpR0lwwBXI-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="مدیریت هتل ,اتاق , پرواز&amp;nbsp;&lt;br&gt;مدیریت ظرفیت و قیمت" vertex="1">
+          <mxGeometry relative="1" x="0.1817" as="geometry">
+            <mxPoint x="-46" y="-20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="ادمین" vertex="1">
+          <mxGeometry height="60" width="30" x="40" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-10" parent="1" style="html=1;whiteSpace=wrap;" value="درگاه پرداخت&lt;br&gt;(Mock)" vertex="1">
+          <mxGeometry height="50" width="110" x="410" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-11" parent="1" style="html=1;whiteSpace=wrap;" value="سرویس ایمیل&lt;br&gt;(Mock)" vertex="1">
+          <mxGeometry height="50" width="110" x="410" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="2RERJAn-J4RpR0lwwBXI-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Context Diagram" vertex="1">
+          <mxGeometry height="40" width="100" x="190" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

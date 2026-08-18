@@ -3,6 +3,9 @@
     <Project Path="src/BuildingBlocks/BuildingBlocks.csproj" />
   </Folder>
   <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Auth/">
+    <Project Path="src/Services/Auth/Auth.Api/Auth.Api.csproj" Id="d91385c1-92ae-472e-9160-e0828fdbfe46" />
+  </Folder>
   <Folder Name="/src/Services/Booking/">
     <Project Path="src/Services/Booking/Booking.Api.csproj" />
   </Folder>
@@ -17,5 +20,8 @@
   </Folder>
   <Folder Name="/src/Services/Payment/">
     <Project Path="src/Services/Payment/Payment.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Search/">
+    <Project Path="src/Services/Search/Search.Api/Search.Api.csproj" Id="be4b54ab-52e1-430a-82e7-9e1f13e0853f" />
   </Folder>
 </Solution>
