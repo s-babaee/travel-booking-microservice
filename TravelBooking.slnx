@@ -4,7 +4,7 @@
   </Folder>
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/Auth/">
-    <Project Path="src/Services/Auth/Auth.Api/Auth.Api.csproj" Id="d91385c1-92ae-472e-9160-e0828fdbfe46" />
+    <Project Path="src/Services/Auth/Auth.Api/Auth.Api.csproj" Id="66f4a923-c9d5-4580-99a7-bdc0dde2fe10" />
   </Folder>
   <Folder Name="/src/Services/Booking/">
     <Project Path="src/Services/Booking/Booking.Api.csproj" />
