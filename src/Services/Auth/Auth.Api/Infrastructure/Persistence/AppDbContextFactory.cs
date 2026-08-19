@@ -9,7 +9,7 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5432;Database=auth;Username=auth;Password=auth_password");
+            "Host=localhost;Port=5433;Database=auth;Username=auth;Password=auth_password");
         return new AppDbContext(optionsBuilder.Options);
     }
 }

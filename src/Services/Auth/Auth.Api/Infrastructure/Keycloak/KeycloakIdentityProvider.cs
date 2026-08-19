@@ -27,28 +27,31 @@ public sealed class KeycloakIdentityProvider : IIdentityProvider
     }
 
     public async Task<ExternalUser> CreateUserAsync(
-        Guid userId,
-        RegisterCommand command,
-        CancellationToken cancellationToken)
+    RegisterCommand command,
+    CancellationToken cancellationToken)
     {
+        var username = command.Username.Trim();
+        var email = command.Email.Trim().ToLowerInvariant();
+        var firstName = command.FirstName?.Trim();
+        var lastName = command.LastName?.Trim();
+
         var body = new
         {
-            id = userId.ToString(),
-            username = command.Username.Trim(),
-            email = command.Email.Trim().ToLowerInvariant(),
-            firstName = command.FirstName?.Trim(),
-            lastName = command.LastName?.Trim(),
+            username,
+            email,
+            firstName,
+            lastName,
             enabled = true,
             emailVerified = true,
             credentials = new[]
             {
-                new
-                {
-                    type = "password",
-                    value = command.Password,
-                    temporary = false
-                }
+            new
+            {
+                type = "password",
+                value = command.Password,
+                temporary = false
             }
+        }
         };
 
         using var response = await SendAdminAsync(
@@ -62,14 +65,31 @@ public sealed class KeycloakIdentityProvider : IIdentityProvider
             throw await CreateExternalExceptionAsync(response);
         }
 
+        var location = response.Headers.Location;
+
+        if (location is null)
+        {
+            throw new InvalidOperationException(
+                "Keycloak created the user but did not return a Location header.");
+        }
+
+        var keycloakUserIdText = location.Segments.Last().TrimEnd('/');
+
+        if (!Guid.TryParse(keycloakUserIdText, out var keycloakUserId))
+        {
+            throw new InvalidOperationException(
+                $"Could not parse Keycloak user ID from Location header: {location}");
+        }
+
         return new ExternalUser(
-            userId,
-            command.Username.Trim(),
-            command.Email.Trim().ToLowerInvariant(),
-            command.FirstName?.Trim(),
-            command.LastName?.Trim(),
+            keycloakUserId,
+            username,
+            email,
+            firstName,
+            lastName,
             true);
     }
+
 
     public async Task<AuthTokenResponse> LoginAsync(
         LoginCommand command,

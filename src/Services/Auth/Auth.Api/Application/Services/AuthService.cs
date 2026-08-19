@@ -26,26 +26,33 @@ public sealed class AuthService : IAuthService
     }
 
     public async Task<UserResponse> RegisterAsync(
-        RegisterCommand command,
-        CancellationToken cancellationToken)
+    RegisterCommand command,
+    CancellationToken cancellationToken)
     {
         if (command.Password.Length < 8)
         {
-            throw new ValidationException("Password must contain at least 8 characters.");
+            throw new ValidationException(
+                "Password must contain at least 8 characters.");
         }
 
-        var existingUser = await _users.GetByEmailAsync(command.Email, cancellationToken);
+        var normalizedEmail = command.Email.Trim().ToLowerInvariant();
+
+        var existingUser = await _users.GetByEmailAsync(
+            normalizedEmail,
+            cancellationToken);
+
         if (existingUser is not null)
         {
-            throw new ConflictException("A user with this email already exists.");
+            throw new ConflictException(
+                "A user with this email already exists.");
         }
 
         var externalUser = await _identityProvider.CreateUserAsync(
-            Guid.NewGuid(),
             command,
             cancellationToken);
 
         var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var user = User.Create(
             externalUser.UserId,
             externalUser.Username,
@@ -64,6 +71,7 @@ public sealed class AuthService : IAuthService
 
         return user.ToResponse();
     }
+
 
     public async Task<AuthTokenResponse> LoginAsync(
         LoginCommand command,

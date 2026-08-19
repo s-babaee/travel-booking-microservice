@@ -17,11 +17,11 @@ public sealed record LoginCommand(
     [Required] string Username,
     [Required] string Password);
 
-public sealed record RefreshTokenCommand([property: Required] string RefreshToken);
+public sealed record RefreshTokenCommand([Required] string RefreshToken);
 
-public sealed record LogoutCommand([property: Required] string RefreshToken);
+public sealed record LogoutCommand([Required] string RefreshToken);
 
-public sealed record ValidateTokenCommand([property: Required] string AccessToken);
+public sealed record ValidateTokenCommand([Required] string AccessToken);
 
 public sealed record AuthTokenResponse(
     string AccessToken,
@@ -43,41 +43,41 @@ public sealed record UserResponse(
     bool IsDeleted);
 
 public sealed record UpdateUserCommand(
-    [property: Required, EmailAddress, StringLength(320)] string Email,
+    [Required, EmailAddress, StringLength(320)] string Email,
     string? FirstName,
     string? LastName);
 
 public sealed record ChangeUserStatusCommand(UserStatus Status);
 
 public sealed record CreateRoleCommand(
-    [property: Required, StringLength(100, MinimumLength = 2)] string Name,
+    [Required, StringLength(100, MinimumLength = 2)] string Name,
     string? Description);
 
 public sealed record UpdateRoleCommand(
-    [property: Required, StringLength(100, MinimumLength = 2)] string Name,
+    [Required, StringLength(100, MinimumLength = 2)] string Name,
     string? Description);
 
 public sealed record RoleResponse(Guid RoleId, string Name, string? Description);
 
 public sealed record CreatePermissionCommand(
-    [property: Required, StringLength(150, MinimumLength = 2)] string Code,
+    [Required, StringLength(150, MinimumLength = 2)] string Code,
     string? Description);
 
 public sealed record UpdatePermissionCommand(
-    [property: Required, StringLength(150, MinimumLength = 2)] string Code,
+    [Required, StringLength(150, MinimumLength = 2)] string Code,
     string? Description);
 
 public sealed record PermissionResponse(Guid PermissionId, string Code, string? Description);
 
 public sealed record ForgotPasswordCommand(
-    [property: Required, EmailAddress, StringLength(320)] string Email);
+    [Required, EmailAddress, StringLength(320)] string Email);
 
 public sealed record ResetPasswordCommand(
-    [property: Required] string Token,
-    [property: Required, MinLength(8)] string NewPassword);
+    [Required] string Token,
+    [Required, MinLength(8)] string NewPassword);
 
 public sealed record ChangePasswordCommand(
-    [property: Required] string CurrentPassword,
-    [property: Required, MinLength(8)] string NewPassword);
+    [Required] string CurrentPassword,
+    [Required, MinLength(8)] string NewPassword);
 
 public sealed record PasswordResetResponse(string Message, string? Token);
