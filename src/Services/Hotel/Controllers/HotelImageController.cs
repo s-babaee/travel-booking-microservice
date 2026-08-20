@@ -1,0 +1,60 @@
+using Hotel.Api.Application.Abstractions;
+using Hotel.Api.Application.Contracts;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Hotel.Api.Controllers;
+
+[ApiController]
+[Route("api/hotels/{hotelId:guid}/images")]
+public sealed class HotelImageController : ControllerBase
+{
+    private readonly IHotelImageService _imageService;
+
+    public HotelImageController(IHotelImageService imageService)
+    {
+        _imageService = imageService;
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(HotelImageResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<HotelImageResponse>> Add(
+        Guid hotelId,
+        [FromBody] AddHotelImageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await _imageService.AddToHotelAsync(
+            hotelId,
+            request,
+            cancellationToken);
+
+        return CreatedAtAction(
+            nameof(List),
+            new { hotelId },
+            response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<HotelImageResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<HotelImageResponse>>> List(
+        Guid hotelId,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _imageService.ListHotelImagesAsync(
+            hotelId,
+            cancellationToken));
+    }
+
+    [HttpDelete("{imageId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Delete(
+        Guid hotelId,
+        Guid imageId,
+        CancellationToken cancellationToken)
+    {
+        await _imageService.DeleteFromHotelAsync(
+            hotelId,
+            imageId,
+            cancellationToken);
+        return NoContent();
+    }
+}
