@@ -1,4 +1,4 @@
-using BuildingBlocks.Events;
+using BuildingBlocks.Contracts.Events;
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
 using Hotel.Api.Application.Exceptions;

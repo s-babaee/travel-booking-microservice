@@ -1,4 +1,4 @@
-namespace BuildingBlocks.Events;
+namespace BuildingBlocks.Contracts.Events;
 
 public sealed record HotelCreated(
     Guid HotelId,

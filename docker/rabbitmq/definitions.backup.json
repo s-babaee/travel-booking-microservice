@@ -1,0 +1,76 @@
+{
+  "exchanges": [
+    { "name": "travel.booking.booking-created.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-created.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-updated.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-status-changed.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-deleted.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-created.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-updated.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-status-changed.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-deleted.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.amenity-created.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.amenity-updated.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.amenity-deleted.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-amenity-assigned.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-amenity-removed.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-amenity-assigned.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-amenity-removed.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-policy-created.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-policy-updated.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-policy-deleted.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-image-added.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.hotel-image-deleted.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-image-added.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false },
+    { "name": "travel.hotel.room-type-image-deleted.v1", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false }
+  ],
+  "queues": [
+    { "name": "travel.notification.booking-created.v1", "vhost": "/", "durable": true, "auto_delete": false },
+    { "name": "travel.payment.booking-created.v1", "vhost": "/", "durable": true, "auto_delete": false },
+    { "name": "travel.search.hotel-catalog.v1", "vhost": "/", "durable": true, "auto_delete": false }
+  ],
+  "bindings": [
+    {
+      "vhost": "/",
+      "source": "travel.booking.booking-created.v1",
+      "destination": "travel.notification.booking-created.v1",
+      "destination_type": "queue",
+      "routing_key": ""
+    },
+    {
+      "vhost": "/",
+      "source": "travel.booking.booking-created.v1",
+      "destination": "travel.payment.booking-created.v1",
+      "destination_type": "queue",
+      "routing_key": ""
+    },
+    {
+      "vhost": "/",
+      "source": "travel.hotel.hotel-created.v1",
+      "destination": "travel.search.hotel-catalog.v1",
+      "destination_type": "queue",
+      "routing_key": ""
+    },
+    {
+      "vhost": "/",
+      "source": "travel.hotel.hotel-updated.v1",
+      "destination": "travel.search.hotel-catalog.v1",
+      "destination_type": "queue",
+      "routing_key": ""
+    },
+    {
+      "vhost": "/",
+      "source": "travel.hotel.hotel-status-changed.v1",
+      "destination": "travel.search.hotel-catalog.v1",
+      "destination_type": "queue",
+      "routing_key": ""
+    },
+    {
+      "vhost": "/",
+      "source": "travel.hotel.hotel-deleted.v1",
+      "destination": "travel.search.hotel-catalog.v1",
+      "destination_type": "queue",
+      "routing_key": ""
+    }
+  ]
+}

@@ -27,7 +27,7 @@
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
-      "secret": "travel-auth-api-secret",
+      "secret": "__KEYCLOAK_CLIENT_SECRET__",
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": false,
       "serviceAccountsEnabled": false,
@@ -46,7 +46,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "admin",
+          "value": "__TRAVEL_ADMIN_PASSWORD__",
           "temporary": false
         }
       ],

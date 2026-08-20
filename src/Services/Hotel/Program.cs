@@ -6,6 +6,7 @@ using Hotel.Api.Infrastructure.Messaging;
 using Hotel.Api.Infrastructure.Persistence;
 using Hotel.Api.Infrastructure.Storage;
 using Hotel.Api.Infrastructure.Web;
+using BuildingBlocks.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -54,8 +55,15 @@ builder.Services.AddScoped<IHotelImageService, HotelImageService>();
 
 var brokerHost = builder.Configuration["MessageBroker:Host"] ?? "localhost";
 var brokerVirtualHost = builder.Configuration["MessageBroker:VirtualHost"] ?? "/";
-var brokerUsername = builder.Configuration["MessageBroker:Username"] ?? "guest";
-var brokerPassword = builder.Configuration["MessageBroker:Password"] ?? "guest";
+var brokerUsername = builder.Configuration["MessageBroker:Username"];
+var brokerPassword = builder.Configuration["MessageBroker:Password"];
+
+if (string.IsNullOrWhiteSpace(brokerUsername)
+    || string.IsNullOrWhiteSpace(brokerPassword))
+{
+    throw new InvalidOperationException(
+        "MessageBroker:Username and MessageBroker:Password must be configured.");
+}
 
 builder.Services.AddMassTransit(configurator =>
 {
@@ -66,6 +74,8 @@ builder.Services.AddMassTransit(configurator =>
             host.Username(brokerUsername);
             host.Password(brokerPassword);
         });
+
+        RabbitMqTopology.ConfigureMessageTopology(cfg);
     });
 });
 

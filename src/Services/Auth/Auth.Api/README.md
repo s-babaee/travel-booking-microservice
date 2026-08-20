@@ -7,29 +7,33 @@
 - `Infrastructure`: EF Core/PostgreSQL و integration با Keycloak Admin/OpenID Connect
 - `Controllers`: لایهٔ HTTP و endpointها
 
-## اجرای وابستگی‌ها
+## اجرای کل سیستم با Docker Compose
 
-ابتدا Docker Desktop را اجرا کنید، سپس در همین پوشه:
+ابتدا Docker Desktop را اجرا کنید، سپس در ریشه‌ی repository:
 
 ```powershell
-docker compose up -d
+Copy-Item .env.example .env
+# مقادیر داخل .env را تغییر دهید
+docker compose up -d --build
 ```
 
 سرویس‌ها:
 
-- PostgreSQL سرویس در `localhost:5432`
-- Keycloak در `http://localhost:8080`
+- PostgreSQL مشترک در `localhost:5432`
+- Keycloak مشترک در `http://localhost:8081`
 - Realm: `travel`
 - Client: `travel-auth-api`
-- کاربر اولیه: `admin` / `admin`
+- کاربر اولیه: `admin` و password تعریف‌شده در `TRAVEL_ADMIN_PASSWORD`
 
-برای اجرای API:
+دیتابیس Auth با نام `auth_db` و کاربر اختصاصی `AUTH_DB_USER` ساخته می‌شود. این سرویس فقط connection string دیتابیس خودش را دریافت می‌کند؛ دسترسی مستقیم به دیتابیس سرویس‌های دیگر وجود ندارد.
+
+برای اجرای API خارج از Docker:
 
 ```powershell
 dotnet run
 ```
 
-در اولین اجرا migration `InitialCreate` روی دیتابیس `auth` اعمال می‌شود.
+در اولین اجرا migration `InitialCreate` روی دیتابیس `auth_db` اعمال می‌شود.
 
 ## نکات محیط production
 

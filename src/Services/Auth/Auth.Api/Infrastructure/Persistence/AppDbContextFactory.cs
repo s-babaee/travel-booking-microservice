@@ -7,9 +7,12 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var connectionString =
+            Environment.GetEnvironmentVariable("ConnectionStrings__AuthDb")
+            ?? "Host=localhost;Port=5432;Database=auth_db;Username=auth_user";
+
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5433;Database=auth;Username=auth;Password=auth_password");
+        optionsBuilder.UseNpgsql(connectionString);
         return new AppDbContext(optionsBuilder.Options);
     }
 }

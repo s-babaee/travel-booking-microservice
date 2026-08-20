@@ -7,9 +7,12 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var connectionString =
+            Environment.GetEnvironmentVariable("ConnectionStrings__HotelDb")
+            ?? "Host=localhost;Port=5432;Database=hotel_db;Username=hotel_user";
+
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5433;Database=hotel;Username=auth;Password=auth_password");
+        optionsBuilder.UseNpgsql(connectionString);
         return new AppDbContext(optionsBuilder.Options);
     }
 }

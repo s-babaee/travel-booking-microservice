@@ -1,4 +1,4 @@
-using BuildingBlocks.Events;
+using BuildingBlocks.Contracts.Events;
 using MassTransit;
 
 namespace Notification.Consumers;

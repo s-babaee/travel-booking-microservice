@@ -66,6 +66,13 @@ var keycloakOptions = builder.Configuration
     .GetSection("Keycloak")
     .Get<KeycloakOptions>() ?? new KeycloakOptions();
 
+if (string.IsNullOrWhiteSpace(keycloakOptions.ClientSecret)
+    || string.IsNullOrWhiteSpace(keycloakOptions.AdminPassword))
+{
+    throw new InvalidOperationException(
+        "Keycloak:ClientSecret and Keycloak:AdminPassword must be configured.");
+}
+
 var keycloakAuthority =
     $"{keycloakOptions.BaseUrl.TrimEnd('/')}/realms/{keycloakOptions.Realm}";
 

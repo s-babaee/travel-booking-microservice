@@ -1,16 +1,238 @@
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq-server
-    ports:
-      - "5672:5672" # پورت ارتباطی با اپلیکیشن
-      - "15672:15672" # پورت پنل مدیریتی (در مرورگر)
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      POSTGRES_DB: ${POSTGRES_ADMIN_DB}
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+      AUTH_DB_NAME: ${AUTH_DB_NAME}
+      AUTH_DB_USER: ${AUTH_DB_USER}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      HOTEL_DB_NAME: ${HOTEL_DB_NAME}
+      HOTEL_DB_USER: ${HOTEL_DB_USER}
+      HOTEL_DB_PASSWORD: ${HOTEL_DB_PASSWORD}
+      BOOKING_DB_NAME: ${BOOKING_DB_NAME}
+      BOOKING_DB_USER: ${BOOKING_DB_USER}
+      BOOKING_DB_PASSWORD: ${BOOKING_DB_PASSWORD}
+      PAYMENT_DB_NAME: ${PAYMENT_DB_NAME}
+      PAYMENT_DB_USER: ${PAYMENT_DB_USER}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      KEYCLOAK_DB_NAME: ${KEYCLOAK_DB_NAME}
+      KEYCLOAK_DB_USER: ${KEYCLOAK_DB_USER}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_ADMIN_USER} -d ${POSTGRES_ADMIN_DB}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - travel-network
+
+  rabbitmq:
+    # از image موجود روی سیستم استفاده می‌کند و Pull نمی‌شود
+    image: rabbitmq:3-management
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - travel-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.3
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/opt/keycloak/entrypoint.sh"]
+    environment:
+      KC_DB: postgres
+      # داخل شبکه Docker همیشه پورت postgres همان 5432 است
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${KEYCLOAK_DB_NAME}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTP_PORT: 8080
+      KC_HTTP_MANAGEMENT_PORT: 9000
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      TRAVEL_ADMIN_PASSWORD: ${TRAVEL_ADMIN_PASSWORD}
+    ports:
+      # روی ویندوز: 8081 | داخل کانتینر: 8080
+      - "${KEYCLOAK_PORT}:8080"
+    volumes:
+      - ./docker/keycloak/entrypoint.sh:/opt/keycloak/entrypoint.sh:ro
+      - ./docker/keycloak/realm/travel-realm.template.json:/opt/keycloak/data/import-template/travel-realm.template.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travel-network
+
+  auth:
+    build:
+      context: .
+      dockerfile: src/Services/Auth/Auth.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__AuthDb: Host=postgres;Port=5432;Database=${AUTH_DB_NAME};Username=${AUTH_DB_USER};Password=${AUTH_DB_PASSWORD}
+      Keycloak__BaseUrl: http://keycloak:8080
+      Keycloak__Realm: ${KEYCLOAK_REALM}
+      Keycloak__ClientId: travel-auth-api
+      Keycloak__ClientSecret: ${KEYCLOAK_CLIENT_SECRET}
+      Keycloak__AdminRealm: master
+      Keycloak__AdminUsername: ${KEYCLOAK_ADMIN_USER}
+      Keycloak__AdminPassword: ${KEYCLOAK_ADMIN_PASSWORD}
+      Auth__ExposeResetToken: "false"
+    ports:
+      - "5289:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    networks:
+      - travel-network
+
+  hotel:
+    build:
+      context: .
+      dockerfile: src/Services/Hotel/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__HotelDb: Host=postgres;Port=5432;Database=${HOTEL_DB_NAME};Username=${HOTEL_DB_USER};Password=${HOTEL_DB_PASSWORD}
+      Database__ApplyMigrations: "true"
+      MessageBroker__Host: rabbitmq
+      MessageBroker__VirtualHost: /
+      MessageBroker__Username: ${RABBITMQ_USER}
+      MessageBroker__Password: ${RABBITMQ_PASSWORD}
+      Storage__RootPath: /app/wwwroot/uploads
+    ports:
+      - "5245:8080"
+    volumes:
+      - hotel_uploads:/app/wwwroot/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - travel-network
+
+  booking:
+    build:
+      context: .
+      dockerfile: src/Services/Booking/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__BookingDb: Host=postgres;Port=5432;Database=${BOOKING_DB_NAME};Username=${BOOKING_DB_USER};Password=${BOOKING_DB_PASSWORD}
+      Database__ApplyMigrations: "true"
+      MessageBroker__Host: rabbitmq
+      MessageBroker__VirtualHost: /
+      MessageBroker__Username: ${RABBITMQ_USER}
+      MessageBroker__Password: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5213:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - travel-network
+
+  payment:
+    build:
+      context: .
+      dockerfile: src/Services/Payment/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PaymentDb: Host=postgres;Port=5432;Database=${PAYMENT_DB_NAME};Username=${PAYMENT_DB_USER};Password=${PAYMENT_DB_PASSWORD}
+      Database__ApplyMigrations: "true"
+    ports:
+      - "5209:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travel-network
+
+  flight:
+    build:
+      context: .
+      dockerfile: src/Services/Flight/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "5148:8080"
+    networks:
+      - travel-network
+
+  search:
+    build:
+      context: .
+      dockerfile: src/Services/Search/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "5278:8080"
+    networks:
+      - travel-network
+
+  notification:
+    build:
+      context: .
+      dockerfile: src/Services/Notification/Dockerfile
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      MessageBroker__Host: rabbitmq
+      MessageBroker__VirtualHost: /
+      MessageBroker__Username: ${RABBITMQ_USER}
+      MessageBroker__Password: ${RABBITMQ_PASSWORD}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - travel-network
 
 networks:
   travel-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  hotel_uploads:

@@ -1,0 +1,12 @@
+.git
+.github
+.vs
+**/bin
+**/obj
+**/Debug
+**/Release
+doc
+*.user
+*.suo
+.env
+docker-compose*.yml
