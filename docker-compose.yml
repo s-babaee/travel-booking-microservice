@@ -12,6 +12,9 @@ services:
       HOTEL_DB_NAME: ${HOTEL_DB_NAME}
       HOTEL_DB_USER: ${HOTEL_DB_USER}
       HOTEL_DB_PASSWORD: ${HOTEL_DB_PASSWORD}
+      FLIGHT_DB_NAME: ${FLIGHT_DB_NAME}
+      FLIGHT_DB_USER: ${FLIGHT_DB_USER}
+      FLIGHT_DB_PASSWORD: ${FLIGHT_DB_PASSWORD}
       BOOKING_DB_NAME: ${BOOKING_DB_NAME}
       BOOKING_DB_USER: ${BOOKING_DB_USER}
       BOOKING_DB_PASSWORD: ${BOOKING_DB_PASSWORD}
@@ -193,8 +196,19 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__FlightDb: Host=postgres;Port=5432;Database=${FLIGHT_DB_NAME};Username=${FLIGHT_DB_USER};Password=${FLIGHT_DB_PASSWORD}
+      Database__ApplyMigrations: "true"
+      MessageBroker__Host: rabbitmq
+      MessageBroker__VirtualHost: /
+      MessageBroker__Username: ${RABBITMQ_USER}
+      MessageBroker__Password: ${RABBITMQ_PASSWORD}
     ports:
       - "5148:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - travel-network
 

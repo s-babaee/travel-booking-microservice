@@ -31,4 +31,25 @@ public static class EventExchangeNames
     public const string HotelImageDeleted = "travel.hotel.hotel-image-deleted.v1";
     public const string RoomTypeImageAdded = "travel.hotel.room-type-image-added.v1";
     public const string RoomTypeImageDeleted = "travel.hotel.room-type-image-deleted.v1";
+
+    public const string FlightCreated = "travel.flight.flight-created.v1";
+    public const string FlightUpdated = "travel.flight.flight-updated.v1";
+    public const string FlightStatusChanged = "travel.flight.flight-status-changed.v1";
+    public const string FlightDeleted = "travel.flight.flight-deleted.v1";
+    public const string RouteCreated = "travel.flight.route-created.v1";
+    public const string RouteUpdated = "travel.flight.route-updated.v1";
+    public const string RouteDeleted = "travel.flight.route-deleted.v1";
+    public const string FlightScheduleCreated = "travel.flight.flight-schedule-created.v1";
+    public const string FlightScheduleUpdated = "travel.flight.flight-schedule-updated.v1";
+    public const string FlightScheduleDeleted = "travel.flight.flight-schedule-deleted.v1";
+    public const string FlightClassCreated = "travel.flight.flight-class-created.v1";
+    public const string FlightClassUpdated = "travel.flight.flight-class-updated.v1";
+    public const string FlightClassStatusChanged = "travel.flight.flight-class-status-changed.v1";
+    public const string FlightClassDeleted = "travel.flight.flight-class-deleted.v1";
+    public const string FlightPolicyCreated = "travel.flight.flight-policy-created.v1";
+    public const string FlightPolicyUpdated = "travel.flight.flight-policy-updated.v1";
+    public const string FlightPolicyDeleted = "travel.flight.flight-policy-deleted.v1";
+    public const string AirlineCreated = "travel.flight.airline-created.v1";
+    public const string AirlineUpdated = "travel.flight.airline-updated.v1";
+    public const string AirlineDeleted = "travel.flight.airline-deleted.v1";
 }

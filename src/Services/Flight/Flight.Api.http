@@ -1,6 +1,14 @@
 @Flight.Api_HostAddress = http://localhost:5148
 
-GET {{Flight.Api_HostAddress}}/weatherforecast/
+GET {{Flight.Api_HostAddress}}/health
 Accept: application/json
 
 ###
+
+GET {{Flight.Api_HostAddress}}/api/airlines
+Accept: application/json
+
+###
+
+GET {{Flight.Api_HostAddress}}/api/routes
+Accept: application/json

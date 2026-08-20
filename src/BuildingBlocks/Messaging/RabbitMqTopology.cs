@@ -78,6 +78,27 @@ public static class RabbitMqTopology
         Configure<RoomTypeImageDeleted>(
             configurator,
             EventExchangeNames.RoomTypeImageDeleted);
+
+        Configure<FlightCreated>(configurator, EventExchangeNames.FlightCreated);
+        Configure<FlightUpdated>(configurator, EventExchangeNames.FlightUpdated);
+        Configure<FlightStatusChanged>(configurator, EventExchangeNames.FlightStatusChanged);
+        Configure<FlightDeleted>(configurator, EventExchangeNames.FlightDeleted);
+        Configure<RouteCreated>(configurator, EventExchangeNames.RouteCreated);
+        Configure<RouteUpdated>(configurator, EventExchangeNames.RouteUpdated);
+        Configure<RouteDeleted>(configurator, EventExchangeNames.RouteDeleted);
+        Configure<FlightScheduleCreated>(configurator, EventExchangeNames.FlightScheduleCreated);
+        Configure<FlightScheduleUpdated>(configurator, EventExchangeNames.FlightScheduleUpdated);
+        Configure<FlightScheduleDeleted>(configurator, EventExchangeNames.FlightScheduleDeleted);
+        Configure<FlightClassCreated>(configurator, EventExchangeNames.FlightClassCreated);
+        Configure<FlightClassUpdated>(configurator, EventExchangeNames.FlightClassUpdated);
+        Configure<FlightClassStatusChanged>(configurator, EventExchangeNames.FlightClassStatusChanged);
+        Configure<FlightClassDeleted>(configurator, EventExchangeNames.FlightClassDeleted);
+        Configure<FlightPolicyCreated>(configurator, EventExchangeNames.FlightPolicyCreated);
+        Configure<FlightPolicyUpdated>(configurator, EventExchangeNames.FlightPolicyUpdated);
+        Configure<FlightPolicyDeleted>(configurator, EventExchangeNames.FlightPolicyDeleted);
+        Configure<AirlineCreated>(configurator, EventExchangeNames.AirlineCreated);
+        Configure<AirlineUpdated>(configurator, EventExchangeNames.AirlineUpdated);
+        Configure<AirlineDeleted>(configurator, EventExchangeNames.AirlineDeleted);
     }
 
     private static void Configure<TEvent>(
