@@ -75,11 +75,10 @@ public sealed class HotelImage : Entity<Guid>
             throw new DomainException("Image and hotel ids are required.");
         }
 
-        if (string.IsNullOrWhiteSpace(url)
-            || !Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri)
-            || uri.Scheme is not ("http" or "https"))
+        if (!IsValidImageLocation(url))
         {
-            throw new DomainException("Image URL must be a valid HTTP or HTTPS URL.");
+            throw new DomainException(
+                "Image URL must be a valid HTTP/HTTPS URL or an application upload path.");
         }
 
         if (displayOrder < 0)
@@ -91,5 +90,22 @@ public sealed class HotelImage : Entity<Guid>
     private static string? NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static bool IsValidImageLocation(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var normalized = value.Trim();
+        if (normalized.StartsWith("/uploads/", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return Uri.TryCreate(normalized, UriKind.Absolute, out var uri)
+            && uri.Scheme is "http" or "https";
     }
 }

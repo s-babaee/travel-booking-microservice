@@ -1,13 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Hotel.Api.Application.Contracts;
 
 public sealed class AddHotelImageRequest
 {
     [Required]
-    [Url]
-    [MaxLength(1000)]
-    public string Url { get; init; } = null!;
+    public IFormFile File { get; init; } = null!;
 
     [MaxLength(300)]
     public string? AltText { get; init; }
@@ -21,9 +20,7 @@ public sealed class AddHotelImageRequest
 public sealed class AddRoomTypeImageRequest
 {
     [Required]
-    [Url]
-    [MaxLength(1000)]
-    public string Url { get; init; } = null!;
+    public IFormFile File { get; init; } = null!;
 
     [MaxLength(300)]
     public string? AltText { get; init; }

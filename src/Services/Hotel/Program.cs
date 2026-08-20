@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
 using Hotel.Api.Application.Abstractions;
+using Hotel.Api.Application.Storage;
 using Hotel.Api.Application.Services;
 using Hotel.Api.Infrastructure.Messaging;
 using Hotel.Api.Infrastructure.Persistence;
+using Hotel.Api.Infrastructure.Storage;
 using Hotel.Api.Infrastructure.Web;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +42,9 @@ builder.Services.AddScoped<IRoomTypeImageRepository>(services =>
     services.GetRequiredService<AppDbContext>());
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.Configure<ImageStorageOptions>(
+    builder.Configuration.GetSection("Storage"));
+builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
 builder.Services.AddScoped<IIntegrationEventPublisher, MassTransitEventPublisher>();
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
@@ -102,6 +107,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 

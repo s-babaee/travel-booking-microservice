@@ -3,6 +3,7 @@ using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
 using Hotel.Api.Application.Exceptions;
 using Hotel.Api.Application.Mapping;
+using Hotel.Api.Application.Storage;
 using Hotel.Api.Domain.Entities;
 
 namespace Hotel.Api.Application.Services;
@@ -13,6 +14,7 @@ public sealed class HotelImageService : IHotelImageService
     private readonly IRoomTypeRepository _roomTypes;
     private readonly IHotelImageRepository _hotelImages;
     private readonly IRoomTypeImageRepository _roomTypeImages;
+    private readonly IImageStorage _imageStorage;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IIntegrationEventPublisher _eventPublisher;
     private readonly TimeProvider _timeProvider;
@@ -22,6 +24,7 @@ public sealed class HotelImageService : IHotelImageService
         IRoomTypeRepository roomTypes,
         IHotelImageRepository hotelImages,
         IRoomTypeImageRepository roomTypeImages,
+        IImageStorage imageStorage,
         IUnitOfWork unitOfWork,
         IIntegrationEventPublisher eventPublisher,
         TimeProvider timeProvider)
@@ -30,6 +33,7 @@ public sealed class HotelImageService : IHotelImageService
         _roomTypes = roomTypes;
         _hotelImages = hotelImages;
         _roomTypeImages = roomTypeImages;
+        _imageStorage = imageStorage;
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _timeProvider = timeProvider;
@@ -44,24 +48,40 @@ public sealed class HotelImageService : IHotelImageService
         await GetHotelOrThrowAsync(hotelId, cancellationToken);
 
         var now = UtcNow();
-        var image = HotelImage.Create(
-            Guid.NewGuid(),
+        var imageId = Guid.NewGuid();
+        var storedImage = await _imageStorage.SaveAsync(
+            request.File,
+            "hotel",
             hotelId,
-            request.Url,
+            cancellationToken);
+        var image = HotelImage.Create(
+            imageId,
+            hotelId,
+            storedImage.PublicUrl,
             request.AltText,
             request.DisplayOrder,
             request.IsPrimary,
             now);
 
-        if (request.IsPrimary)
+        try
         {
-            await MarkExistingHotelImagesSecondaryAsync(
-                hotelId,
-                cancellationToken);
-        }
+            if (request.IsPrimary)
+            {
+                await MarkExistingHotelImagesSecondaryAsync(
+                    hotelId,
+                    cancellationToken);
+            }
 
-        await _hotelImages.AddAsync(image, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _hotelImages.AddAsync(image, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await _imageStorage.DeleteAsync(
+                storedImage.PublicUrl,
+                CancellationToken.None);
+            throw;
+        }
 
         await _eventPublisher.PublishAsync(
             new HotelImageAdded(
@@ -103,6 +123,7 @@ public sealed class HotelImageService : IHotelImageService
 
         _hotelImages.Remove(image);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _imageStorage.DeleteAsync(image.Url, cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new HotelImageDeleted(
@@ -121,24 +142,39 @@ public sealed class HotelImageService : IHotelImageService
         await GetRoomTypeOrThrowAsync(roomTypeId, cancellationToken);
 
         var now = UtcNow();
+        var storedImage = await _imageStorage.SaveAsync(
+            request.File,
+            "room-type",
+            roomTypeId,
+            cancellationToken);
         var image = RoomTypeImage.Create(
             Guid.NewGuid(),
             roomTypeId,
-            request.Url,
+            storedImage.PublicUrl,
             request.AltText,
             request.DisplayOrder,
             request.IsPrimary,
             now);
 
-        if (request.IsPrimary)
+        try
         {
-            await MarkExistingRoomTypeImagesSecondaryAsync(
-                roomTypeId,
-                cancellationToken);
-        }
+            if (request.IsPrimary)
+            {
+                await MarkExistingRoomTypeImagesSecondaryAsync(
+                    roomTypeId,
+                    cancellationToken);
+            }
 
-        await _roomTypeImages.AddAsync(image, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _roomTypeImages.AddAsync(image, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await _imageStorage.DeleteAsync(
+                storedImage.PublicUrl,
+                CancellationToken.None);
+            throw;
+        }
 
         await _eventPublisher.PublishAsync(
             new RoomTypeImageAdded(
@@ -180,6 +216,7 @@ public sealed class HotelImageService : IHotelImageService
 
         _roomTypeImages.Remove(image);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _imageStorage.DeleteAsync(image.Url, cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new RoomTypeImageDeleted(

@@ -16,10 +16,11 @@ public sealed class RoomTypeImageController : ControllerBase
     }
 
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(RoomTypeImageResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<RoomTypeImageResponse>> Add(
         Guid roomTypeId,
-        [FromBody] AddRoomTypeImageRequest request,
+        [FromForm] AddRoomTypeImageRequest request,
         CancellationToken cancellationToken)
     {
         var response = await _imageService.AddToRoomTypeAsync(

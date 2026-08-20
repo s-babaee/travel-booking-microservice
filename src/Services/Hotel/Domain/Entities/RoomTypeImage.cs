@@ -47,11 +47,10 @@ public sealed class RoomTypeImage : Entity<Guid>
             throw new DomainException("Image and room type ids are required.");
         }
 
-        if (string.IsNullOrWhiteSpace(url)
-            || !Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri)
-            || uri.Scheme is not ("http" or "https"))
+        if (!IsValidImageLocation(url))
         {
-            throw new DomainException("Image URL must be a valid HTTP or HTTPS URL.");
+            throw new DomainException(
+                "Image URL must be a valid HTTP/HTTPS URL or an application upload path.");
         }
 
         if (displayOrder < 0)
@@ -77,5 +76,22 @@ public sealed class RoomTypeImage : Entity<Guid>
     public void MarkSecondary()
     {
         IsPrimary = false;
+    }
+
+    private static bool IsValidImageLocation(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var normalized = value.Trim();
+        if (normalized.StartsWith("/uploads/", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return Uri.TryCreate(normalized, UriKind.Absolute, out var uri)
+            && uri.Scheme is "http" or "https";
     }
 }

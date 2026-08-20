@@ -16,10 +16,11 @@ public sealed class HotelImageController : ControllerBase
     }
 
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(HotelImageResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<HotelImageResponse>> Add(
         Guid hotelId,
-        [FromBody] AddHotelImageRequest request,
+        [FromForm] AddHotelImageRequest request,
         CancellationToken cancellationToken)
     {
         var response = await _imageService.AddToHotelAsync(
