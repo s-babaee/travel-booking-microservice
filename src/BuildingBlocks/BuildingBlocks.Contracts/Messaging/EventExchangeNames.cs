@@ -3,6 +3,12 @@ namespace BuildingBlocks.Contracts.Messaging;
 public static class EventExchangeNames
 {
     public const string BookingCreated = "travel.booking.booking-created.v1";
+    public const string BookingStatusChanged = "travel.booking.status-changed.v1";
+    public const string PaymentAuthorizationRequested =
+        "travel.payment.authorization-requested.v1";
+    public const string PaymentAuthorized = "travel.payment.authorized.v1";
+    public const string PaymentAuthorizationFailed =
+        "travel.payment.authorization-failed.v1";
 
     public const string HotelCreated = "travel.hotel.hotel-created.v1";
     public const string HotelUpdated = "travel.hotel.hotel-updated.v1";

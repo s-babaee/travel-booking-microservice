@@ -163,6 +163,11 @@ services:
       MessageBroker__VirtualHost: /
       MessageBroker__Username: ${RABBITMQ_USER}
       MessageBroker__Password: ${RABBITMQ_PASSWORD}
+      Services__InventoryBaseUrl: http://inventory:8080/
+      Services__PaymentBaseUrl: http://payment:8080/
+      Payment__Mode: Http
+      Keycloak__BaseUrl: http://keycloak:8080
+      Keycloak__Realm: ${KEYCLOAK_REALM}
     ports:
       - "5213:8080"
     depends_on:
