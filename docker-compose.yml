@@ -21,6 +21,9 @@ services:
       PAYMENT_DB_NAME: ${PAYMENT_DB_NAME}
       PAYMENT_DB_USER: ${PAYMENT_DB_USER}
       PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      INVENTORY_DB_NAME: ${INVENTORY_DB_NAME}
+      INVENTORY_DB_USER: ${INVENTORY_DB_USER}
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
       KEYCLOAK_DB_NAME: ${KEYCLOAK_DB_NAME}
       KEYCLOAK_DB_USER: ${KEYCLOAK_DB_USER}
       KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
@@ -184,6 +187,30 @@ services:
       - "5209:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+    networks:
+      - travel-network
+
+  inventory:
+    build:
+      context: .
+      dockerfile: src/Services/Inventory/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__InventoryDb: Host=postgres;Port=5432;Database=${INVENTORY_DB_NAME};Username=${INVENTORY_DB_USER};Password=${INVENTORY_DB_PASSWORD}
+      Database__ApplyMigrations: "true"
+      MessageBroker__Host: rabbitmq
+      MessageBroker__VirtualHost: /
+      MessageBroker__Username: ${RABBITMQ_USER}
+      MessageBroker__Password: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5256:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - travel-network

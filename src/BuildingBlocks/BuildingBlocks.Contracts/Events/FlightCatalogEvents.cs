@@ -113,3 +113,13 @@ public sealed record AirlineUpdated(
     DateTime OccurredAtUtc);
 
 public sealed record AirlineDeleted(Guid AirlineId, DateTime OccurredAtUtc);
+
+public sealed record FlightAvailabilityChanged(
+    Guid FlightId,
+    Guid FlightClassId,
+    DateOnly Date,
+    int TotalSeats,
+    int AvailableSeats,
+    int HeldSeats,
+    int ConfirmedSeats,
+    DateTime OccurredAtUtc);

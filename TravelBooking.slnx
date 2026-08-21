@@ -4,6 +4,9 @@
     <Project Path="src/BuildingBlocks/BuildingBlocks.Contracts/BuildingBlocks.Contracts.csproj" />
   </Folder>
   <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Inventory/">
+    <Project Path="src/Services/Inventory/Inventory.Api/Inventory.Api.csproj" />
+  </Folder>
   <Folder Name="/src/Services/Auth/">
     <Project Path="src/Services/Auth/Auth.Api/Auth.Api.csproj" Id="66f4a923-c9d5-4580-99a7-bdc0dde2fe10" />
   </Folder>

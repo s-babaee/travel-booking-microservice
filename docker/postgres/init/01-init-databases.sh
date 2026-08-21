@@ -68,6 +68,7 @@ create_database "$HOTEL_DB_NAME" "$HOTEL_DB_USER" "$HOTEL_DB_PASSWORD"
 create_database "$FLIGHT_DB_NAME" "$FLIGHT_DB_USER" "$FLIGHT_DB_PASSWORD"
 create_database "$BOOKING_DB_NAME" "$BOOKING_DB_USER" "$BOOKING_DB_PASSWORD"
 create_database "$PAYMENT_DB_NAME" "$PAYMENT_DB_USER" "$PAYMENT_DB_PASSWORD"
+create_database "$INVENTORY_DB_NAME" "$INVENTORY_DB_USER" "$INVENTORY_DB_PASSWORD"
 create_database "$KEYCLOAK_DB_NAME" "$KEYCLOAK_DB_USER" "$KEYCLOAK_DB_PASSWORD"
 
 # The administrative database is not a service database. Service identities
@@ -82,6 +83,7 @@ psql \
     --set flight_user="$FLIGHT_DB_USER" \
     --set booking_user="$BOOKING_DB_USER" \
     --set payment_user="$PAYMENT_DB_USER" \
+    --set inventory_user="$INVENTORY_DB_USER" \
     --set keycloak_user="$KEYCLOAK_DB_USER" <<'SQL'
 SELECT format(
     'REVOKE CONNECT ON DATABASE %I FROM PUBLIC',
@@ -95,5 +97,6 @@ SELECT format(
     :'flight_user',
     :'booking_user',
     :'payment_user',
+    :'inventory_user',
     :'keycloak_user') \gexec
 SQL

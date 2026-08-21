@@ -31,6 +31,7 @@ public static class EventExchangeNames
     public const string HotelImageDeleted = "travel.hotel.hotel-image-deleted.v1";
     public const string RoomTypeImageAdded = "travel.hotel.room-type-image-added.v1";
     public const string RoomTypeImageDeleted = "travel.hotel.room-type-image-deleted.v1";
+    public const string HotelAvailabilityChanged = "travel.inventory.hotel-availability-changed.v1";
 
     public const string FlightCreated = "travel.flight.flight-created.v1";
     public const string FlightUpdated = "travel.flight.flight-updated.v1";
@@ -52,4 +53,5 @@ public static class EventExchangeNames
     public const string AirlineCreated = "travel.flight.airline-created.v1";
     public const string AirlineUpdated = "travel.flight.airline-updated.v1";
     public const string AirlineDeleted = "travel.flight.airline-deleted.v1";
+    public const string FlightAvailabilityChanged = "travel.inventory.flight-availability-changed.v1";
 }

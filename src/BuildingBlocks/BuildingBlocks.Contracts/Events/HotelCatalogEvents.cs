@@ -124,3 +124,13 @@ public sealed record RoomTypeImageDeleted(
     Guid ImageId,
     Guid RoomTypeId,
     DateTime OccurredAtUtc);
+
+public sealed record HotelAvailabilityChanged(
+    Guid HotelId,
+    Guid RoomTypeId,
+    DateOnly Date,
+    int TotalUnits,
+    int AvailableUnits,
+    int HeldUnits,
+    int ConfirmedUnits,
+    DateTime OccurredAtUtc);

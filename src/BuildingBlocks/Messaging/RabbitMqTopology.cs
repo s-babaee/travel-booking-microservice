@@ -78,6 +78,9 @@ public static class RabbitMqTopology
         Configure<RoomTypeImageDeleted>(
             configurator,
             EventExchangeNames.RoomTypeImageDeleted);
+        Configure<HotelAvailabilityChanged>(
+            configurator,
+            EventExchangeNames.HotelAvailabilityChanged);
 
         Configure<FlightCreated>(configurator, EventExchangeNames.FlightCreated);
         Configure<FlightUpdated>(configurator, EventExchangeNames.FlightUpdated);
@@ -99,6 +102,9 @@ public static class RabbitMqTopology
         Configure<AirlineCreated>(configurator, EventExchangeNames.AirlineCreated);
         Configure<AirlineUpdated>(configurator, EventExchangeNames.AirlineUpdated);
         Configure<AirlineDeleted>(configurator, EventExchangeNames.AirlineDeleted);
+        Configure<FlightAvailabilityChanged>(
+            configurator,
+            EventExchangeNames.FlightAvailabilityChanged);
     }
 
     private static void Configure<TEvent>(
