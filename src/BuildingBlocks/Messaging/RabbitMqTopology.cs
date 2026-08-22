@@ -24,6 +24,24 @@ public static class RabbitMqTopology
         Configure<PaymentAuthorizationFailed>(
             configurator,
             EventExchangeNames.PaymentAuthorizationFailed);
+        Configure<PaymentFailedEvent>(
+            configurator,
+            EventExchangeNames.PaymentFailed);
+        Configure<PaymentRefundedEvent>(
+            configurator,
+            EventExchangeNames.PaymentRefunded);
+        Configure<BookingConfirmedEvent>(
+            configurator,
+            EventExchangeNames.BookingConfirmed);
+        Configure<BookingFailedEvent>(
+            configurator,
+            EventExchangeNames.BookingFailed);
+        Configure<BookingCancellationStartedEvent>(
+            configurator,
+            EventExchangeNames.BookingCancellationStarted);
+        Configure<BookingCancelledEvent>(
+            configurator,
+            EventExchangeNames.BookingCancelled);
 
         Configure<HotelCreated>(configurator, EventExchangeNames.HotelCreated);
         Configure<HotelUpdated>(configurator, EventExchangeNames.HotelUpdated);

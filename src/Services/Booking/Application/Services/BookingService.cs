@@ -157,15 +157,28 @@ public sealed class BookingService(
         var nowUtc = UtcNow();
         booking.StartCancellation(nowUtc);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await PublishStatusAsync(booking, cancellationToken);
 
         try
         {
             if (booking.PaymentTransactionId.HasValue)
             {
-                await payments.VoidAsync(
-                    booking.PaymentTransactionId.Value,
-                    request?.Reason ?? "Booking cancellation",
-                    cancellationToken);
+                var reason = request?.Reason ?? "Booking cancellation";
+                if (booking.Status == BookingStatus.Cancelling
+                    && booking.ConfirmedAtUtc.HasValue)
+                {
+                    await payments.RefundAsync(
+                        booking.PaymentTransactionId.Value,
+                        reason,
+                        cancellationToken);
+                }
+                else
+                {
+                    await payments.VoidAsync(
+                        booking.PaymentTransactionId.Value,
+                        reason,
+                        cancellationToken);
+                }
             }
 
             if (booking.InventoryHoldId.HasValue)
@@ -330,7 +343,8 @@ public sealed class BookingService(
                     booking.UserId,
                     booking.TotalAmount,
                     booking.Currency,
-                    paymentMethodToken),
+                    paymentMethodToken,
+                    booking.IdempotencyKey),
                 cancellationToken);
             if (!payment.Succeeded || !payment.TransactionId.HasValue)
             {
@@ -480,6 +494,47 @@ public sealed class BookingService(
                 UtcNow(),
                 booking.FailureReason),
             cancellationToken);
+
+        switch (booking.Status)
+        {
+            case BookingStatus.Confirmed:
+                await events.PublishAsync(
+                    new BookingConfirmedEvent(
+                        booking.Id,
+                        booking.UserId,
+                        booking.Type.ToString(),
+                        booking.TotalAmount,
+                        booking.Currency,
+                        UtcNow()),
+                    cancellationToken);
+                break;
+            case BookingStatus.Failed:
+                await events.PublishAsync(
+                    new BookingFailedEvent(
+                        booking.Id,
+                        booking.UserId,
+                        booking.FailureReason ?? "Booking failed.",
+                        UtcNow()),
+                    cancellationToken);
+                break;
+            case BookingStatus.Cancelling:
+                await events.PublishAsync(
+                    new BookingCancellationStartedEvent(
+                        booking.Id,
+                        booking.UserId,
+                        booking.FailureReason,
+                        UtcNow()),
+                    cancellationToken);
+                break;
+            case BookingStatus.Cancelled:
+                await events.PublishAsync(
+                    new BookingCancelledEvent(
+                        booking.Id,
+                        booking.UserId,
+                        UtcNow()),
+                    cancellationToken);
+                break;
+        }
     }
 
     private void EnsureOwnerOrAdmin(BookingEntity booking)

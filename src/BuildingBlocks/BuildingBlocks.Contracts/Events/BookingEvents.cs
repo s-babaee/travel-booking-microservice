@@ -17,6 +17,7 @@ public sealed record PaymentAuthorizationRequested(
 
 public sealed record PaymentAuthorized(
     Guid BookingId,
+    Guid UserId,
     Guid TransactionId,
     decimal Amount,
     string Currency,

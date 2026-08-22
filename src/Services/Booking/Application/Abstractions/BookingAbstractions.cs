@@ -73,6 +73,11 @@ public interface IPaymentGateway
         Guid transactionId,
         string reason,
         CancellationToken cancellationToken);
+
+    Task RefundAsync(
+        Guid transactionId,
+        string reason,
+        CancellationToken cancellationToken);
 }
 
 public interface ICurrentUser
@@ -119,7 +124,8 @@ public sealed record PaymentAuthorizationCommand(
     Guid UserId,
     decimal Amount,
     string Currency,
-    string PaymentMethodToken);
+    string PaymentMethodToken,
+    string? IdempotencyKey = null);
 
 public sealed record PaymentAuthorizationResult(
     bool Succeeded,

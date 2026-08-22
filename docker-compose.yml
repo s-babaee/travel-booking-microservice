@@ -21,6 +21,9 @@ services:
       PAYMENT_DB_NAME: ${PAYMENT_DB_NAME}
       PAYMENT_DB_USER: ${PAYMENT_DB_USER}
       PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME}
+      NOTIFICATION_DB_USER: ${NOTIFICATION_DB_USER}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
       INVENTORY_DB_NAME: ${INVENTORY_DB_NAME}
       INVENTORY_DB_USER: ${INVENTORY_DB_USER}
       INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
@@ -188,10 +191,18 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PaymentDb: Host=postgres;Port=5432;Database=${PAYMENT_DB_NAME};Username=${PAYMENT_DB_USER};Password=${PAYMENT_DB_PASSWORD}
       Database__ApplyMigrations: "true"
+      MessageBroker__Host: rabbitmq
+      MessageBroker__VirtualHost: /
+      MessageBroker__Username: ${RABBITMQ_USER}
+      MessageBroker__Password: ${RABBITMQ_PASSWORD}
+      Keycloak__BaseUrl: http://keycloak:8080
+      Keycloak__Realm: ${KEYCLOAK_REALM}
     ports:
       - "5209:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - travel-network
@@ -264,11 +275,22 @@ services:
     restart: unless-stopped
     environment:
       DOTNET_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__NotificationDb: Host=postgres;Port=5432;Database=${NOTIFICATION_DB_NAME};Username=${NOTIFICATION_DB_USER};Password=${NOTIFICATION_DB_PASSWORD}
+      Database__ApplyMigrations: "true"
+      Database__SeedTemplates: "true"
       MessageBroker__Host: rabbitmq
       MessageBroker__VirtualHost: /
       MessageBroker__Username: ${RABBITMQ_USER}
       MessageBroker__Password: ${RABBITMQ_PASSWORD}
+      Keycloak__BaseUrl: http://keycloak:8080
+      Keycloak__Realm: ${KEYCLOAK_REALM}
+    ports:
+      - "5265:8080"
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:

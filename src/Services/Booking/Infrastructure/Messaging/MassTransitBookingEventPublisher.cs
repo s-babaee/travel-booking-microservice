@@ -24,6 +24,23 @@ public sealed class MassTransitBookingEventPublisher(
                 {
                     context.SetRoutingKey(EventExchangeNames.BookingStatusChanged);
                 }
+                else if (@event is BookingConfirmedEvent)
+                {
+                    context.SetRoutingKey(EventExchangeNames.BookingConfirmed);
+                }
+                else if (@event is BookingFailedEvent)
+                {
+                    context.SetRoutingKey(EventExchangeNames.BookingFailed);
+                }
+                else if (@event is BookingCancellationStartedEvent)
+                {
+                    context.SetRoutingKey(
+                        EventExchangeNames.BookingCancellationStarted);
+                }
+                else if (@event is BookingCancelledEvent)
+                {
+                    context.SetRoutingKey(EventExchangeNames.BookingCancelled);
+                }
             },
             cancellationToken);
 }

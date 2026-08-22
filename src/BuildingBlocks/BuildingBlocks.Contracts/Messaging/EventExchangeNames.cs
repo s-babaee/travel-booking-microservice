@@ -9,6 +9,13 @@ public static class EventExchangeNames
     public const string PaymentAuthorized = "travel.payment.authorized.v1";
     public const string PaymentAuthorizationFailed =
         "travel.payment.authorization-failed.v1";
+    public const string PaymentFailed = "travel.payment.failed.v1";
+    public const string PaymentRefunded = "travel.payment.refunded.v1";
+    public const string BookingConfirmed = "travel.booking.confirmed.v1";
+    public const string BookingFailed = "travel.booking.failed.v1";
+    public const string BookingCancellationStarted =
+        "travel.booking.cancellation-started.v1";
+    public const string BookingCancelled = "travel.booking.cancelled.v1";
 
     public const string HotelCreated = "travel.hotel.hotel-created.v1";
     public const string HotelUpdated = "travel.hotel.hotel-updated.v1";
