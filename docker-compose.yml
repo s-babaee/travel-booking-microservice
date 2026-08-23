@@ -98,6 +98,40 @@ services:
     networks:
       - travel-network
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: src/ApiGateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
+      Keycloak__BaseUrl: http://keycloak:8080
+      Keycloak__Realm: ${KEYCLOAK_REALM}
+    ports:
+      - "5000:8080"
+    depends_on:
+      keycloak:
+        condition: service_started
+      auth:
+        condition: service_started
+      hotel:
+        condition: service_started
+      booking:
+        condition: service_started
+      payment:
+        condition: service_started
+      inventory:
+        condition: service_started
+      flight:
+        condition: service_started
+      search:
+        condition: service_started
+      notification:
+        condition: service_started
+    networks:
+      - travel-network
+
   auth:
     build:
       context: .
