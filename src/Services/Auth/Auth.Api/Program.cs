@@ -1,108 +1,53 @@
+using System.Security.Claims;
 using Auth.Api.Application.Abstractions;
 using Auth.Api.Application.Services;
 using Auth.Api.Infrastructure.Keycloak;
 using Auth.Api.Infrastructure.Persistence;
+using Auth.Api.Infrastructure.Persistence.Repositories;
 using Auth.Api.Infrastructure.Security;
 using Auth.Api.Infrastructure.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using Npgsql;
-using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var authDbConnectionString =
-    builder.Configuration.GetConnectionString("AuthDb");
+// ==========================================
+// 1. Configuration & Options
+// ==========================================
+var connectionString = builder.Configuration.GetConnectionString("AuthDb");
 
-if (string.IsNullOrWhiteSpace(authDbConnectionString))
+builder.Services.Configure<KeycloakOptions>(builder.Configuration.GetSection("Keycloak"));
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
+
+var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>() ?? new KeycloakOptions();
+var keycloakAuthority = $"{keycloakOptions.BaseUrl.TrimEnd('/')}/realms/{keycloakOptions.Realm}";
+
+// ==========================================
+// 2. Database & Repositories (Persistence)
+// ==========================================
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+
+// ==========================================
+// 3. Application Services & External Clients
+// ==========================================
+builder.Services.AddHttpClient<IIdentityProvider, KeycloakIdentityProvider>((sp, client) =>
 {
-    throw new InvalidOperationException(
-        "ConnectionStrings:AuthDb پیدا نشد.");
-}
-
-var csb = new NpgsqlConnectionStringBuilder(authDbConnectionString);
-
-Console.WriteLine(
-    $"DB => Host={csb.Host}; Port={csb.Port}; " +
-    $"Database={csb.Database}; Username={csb.Username}; " +
-    $"PasswordLength={csb.Password?.Length ?? 0}");
-
-try
-{
-    await using var connection =
-        new NpgsqlConnection(authDbConnectionString);
-
-    await connection.OpenAsync();
-
-    await using var command = new NpgsqlCommand(
-        "SELECT current_user, current_database(), inet_server_port();",
-        connection);
-
-    await using var reader = await command.ExecuteReaderAsync();
-    await reader.ReadAsync();
-
-    Console.WriteLine(
-        $"✅ PostgreSQL connected => " +
-        $"User={reader.GetString(0)}, " +
-        $"Database={reader.GetString(1)}, " +
-        $"ServerPort={reader.GetInt32(2)}");
-}
-catch (Exception exception)
-{
-    Console.WriteLine(
-        $"❌ Direct Npgsql failed => {exception.Message}");
-
-    throw;
-}
-
-builder.Services.Configure<KeycloakOptions>(
-    builder.Configuration.GetSection("Keycloak"));
-builder.Services.Configure<AuthOptions>(
-    builder.Configuration.GetSection("Auth"));
-
-var keycloakOptions = builder.Configuration
-    .GetSection("Keycloak")
-    .Get<KeycloakOptions>() ?? new KeycloakOptions();
-
-if (string.IsNullOrWhiteSpace(keycloakOptions.ClientSecret)
-    || string.IsNullOrWhiteSpace(keycloakOptions.AdminPassword))
-{
-    throw new InvalidOperationException(
-        "Keycloak:ClientSecret and Keycloak:AdminPassword must be configured.");
-}
-
-var keycloakAuthority =
-    $"{keycloakOptions.BaseUrl.TrimEnd('/')}/realms/{keycloakOptions.Realm}";
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("AuthDb")));
-
-builder.Services.AddScoped<IUnitOfWork>(services =>
-    services.GetRequiredService<AppDbContext>());
-builder.Services.AddScoped<IUserRepository>(services =>
-    services.GetRequiredService<AppDbContext>());
-builder.Services.AddScoped<IRoleRepository>(services =>
-    services.GetRequiredService<AppDbContext>());
-builder.Services.AddScoped<IPermissionRepository>(services =>
-    services.GetRequiredService<AppDbContext>());
-builder.Services.AddScoped<IUserRoleRepository>(services =>
-    services.GetRequiredService<AppDbContext>());
-builder.Services.AddScoped<IRolePermissionRepository>(services =>
-    services.GetRequiredService<AppDbContext>());
-builder.Services.AddScoped<IPasswordResetTokenRepository>(services =>
-    services.GetRequiredService<AppDbContext>());
-
-builder.Services.AddHttpClient<IIdentityProvider, KeycloakIdentityProvider>(
-    (services, client) =>
-    {
-        var options = services.GetRequiredService<
-            Microsoft.Extensions.Options.IOptions<KeycloakOptions>>().Value;
-
-        client.BaseAddress = new Uri($"{options.BaseUrl.TrimEnd('/')}/");
-        client.Timeout = TimeSpan.FromSeconds(30);
-    });
+    var options = sp.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+    client.BaseAddress = new Uri($"{options.BaseUrl.TrimEnd('/')}/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -111,6 +56,9 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 
+// ==========================================
+// 4. Authentication & Authorization
+// ==========================================
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -128,17 +76,17 @@ builder.Services
         };
     });
 
-builder.Services.AddTransient<
-    Microsoft.AspNetCore.Authentication.IClaimsTransformation,
-    KeycloakClaimsTransformation>();
+builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("admin", policy => policy.RequireRole("admin"));
 });
 
+// ==========================================
+// 5. Web & Swagger Setup
+// ==========================================
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -167,6 +115,9 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 
+// ==========================================
+// 6. Application Pipeline (Middleware)
+// ==========================================
 var app = builder.Build();
 
 await DatabaseInitializer.InitializeAsync(app.Services);
@@ -176,7 +127,6 @@ app.UseMiddleware<ApiExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API v1");
@@ -188,10 +138,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
 
-public partial class Program
-{
-}
+public partial class Program { }

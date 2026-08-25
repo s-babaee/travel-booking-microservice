@@ -15,9 +15,7 @@ public sealed record ExternalRole(string Name, string? Description, string? Id =
 
 public interface IIdentityProvider
 {
-     Task<ExternalUser> CreateUserAsync(
-    RegisterCommand command,
-    CancellationToken cancellationToken);
+    Task<ExternalUser> CreateUserAsync(RegisterCommand command,CancellationToken cancellationToken);
     Task<AuthTokenResponse> LoginAsync(LoginCommand command, CancellationToken cancellationToken);
     Task<AuthTokenResponse> RefreshTokenAsync(RefreshTokenCommand command, CancellationToken cancellationToken);
     Task LogoutAsync(LogoutCommand command, CancellationToken cancellationToken);

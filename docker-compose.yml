@@ -48,7 +48,6 @@ services:
       - travel-network
 
   rabbitmq:
-    # از image موجود روی سیستم استفاده می‌کند و Pull نمی‌شود
     image: rabbitmq:3-management
     pull_policy: never
     restart: unless-stopped
@@ -76,7 +75,6 @@ services:
     entrypoint: ["/bin/sh", "/opt/keycloak/entrypoint.sh"]
     environment:
       KC_DB: postgres
-      # داخل شبکه Docker همیشه پورت postgres همان 5432 است
       KC_DB_URL: jdbc:postgresql://postgres:5432/${KEYCLOAK_DB_NAME}
       KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
@@ -87,7 +85,6 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       TRAVEL_ADMIN_PASSWORD: ${TRAVEL_ADMIN_PASSWORD}
     ports:
-      # روی ویندوز: 8081 | داخل کانتینر: 8080
       - "${KEYCLOAK_PORT}:8080"
     volumes:
       - ./docker/keycloak/entrypoint.sh:/opt/keycloak/entrypoint.sh:ro
