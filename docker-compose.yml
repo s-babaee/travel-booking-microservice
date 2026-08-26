@@ -129,6 +129,19 @@ services:
     networks:
       - travel-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      api-gateway:
+        condition: service_started
+    networks:
+      - travel-network
+
   auth:
     build:
       context: .
