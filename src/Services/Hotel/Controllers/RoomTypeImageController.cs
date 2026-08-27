@@ -1,10 +1,12 @@
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "admin")]
 [Route("api/room-types/{roomTypeId:guid}/images")]
 public sealed class RoomTypeImageController : ControllerBase
 {

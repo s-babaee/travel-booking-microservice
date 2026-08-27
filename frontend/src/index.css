@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Vazirmatn:wght@400;500;600;700;800&display=swap");
 
 :root {
   --ink: #101827;
@@ -19,7 +19,7 @@
   --info: #4d85c6;
   --radius: 18px;
   --shadow: 0 16px 45px rgba(20, 37, 65, 0.08);
-  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  font-family: "Vazirmatn", Tahoma, sans-serif;
   color: var(--ink);
   background: var(--surface-soft);
   font-synthesis: none;
@@ -78,7 +78,10 @@ textarea {
   outline: none;
   padding: 13px 15px;
   font-size: 0.88rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 input:focus,
@@ -147,14 +150,14 @@ textarea {
 }
 
 .brand strong {
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 1.05rem;
   letter-spacing: -0.08em;
 }
 
 .brand small {
   color: var(--muted);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.42rem;
   letter-spacing: 0.06em;
 }
@@ -174,7 +177,7 @@ textarea {
 .eyebrow {
   display: inline-block;
   color: #8692a6;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   line-height: 1.7;
@@ -196,7 +199,11 @@ textarea {
   border-radius: 11px;
   font-size: 0.82rem;
   font-weight: 700;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
@@ -611,12 +618,16 @@ textarea {
 }
 
 .hero-visual::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 390px;
   height: 390px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(202, 255, 114, 0.25), rgba(202, 255, 114, 0) 69%);
+  background: radial-gradient(
+    circle,
+    rgba(202, 255, 114, 0.25),
+    rgba(202, 255, 114, 0) 69%
+  );
   z-index: -2;
 }
 
@@ -683,19 +694,27 @@ textarea {
 .image-cappadocia::before,
 .image-hotel::before,
 .image-flight::before {
-  content: '';
+  content: "";
   position: absolute;
   right: 12%;
   bottom: 0;
   width: 60%;
   height: 75%;
   background: #c88a65;
-  clip-path: polygon(0 100%, 16% 35%, 31% 63%, 45% 12%, 62% 57%, 76% 32%, 100% 100%);
+  clip-path: polygon(
+    0 100%,
+    16% 35%,
+    31% 63%,
+    45% 12%,
+    62% 57%,
+    76% 32%,
+    100% 100%
+  );
   opacity: 0.8;
 }
 
 .image-cappadocia::after {
-  content: '✦  ✦  ◇  ✦';
+  content: "✦  ✦  ◇  ✦";
   position: absolute;
   top: 30px;
   left: 22px;
@@ -938,7 +957,7 @@ textarea {
 .workflow-steps span {
   margin-bottom: 38px;
   color: var(--accent);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.7rem;
 }
 
@@ -982,14 +1001,18 @@ textarea {
   padding: 45px clamp(30px, 7vw, 100px);
   color: #fff;
   background:
-    radial-gradient(circle at 16% 25%, rgba(56, 91, 148, 0.46), transparent 31%),
+    radial-gradient(
+      circle at 16% 25%,
+      rgba(56, 91, 148, 0.46),
+      transparent 31%
+    ),
     radial-gradient(circle at 86% 82%, rgba(45, 61, 93, 0.35), transparent 30%),
     var(--navy);
 }
 
 .auth-showcase::before,
 .auth-showcase::after {
-  content: '';
+  content: "";
   position: absolute;
   border: 1px solid rgba(191, 212, 242, 0.11);
   border-radius: 50%;
@@ -1052,7 +1075,7 @@ textarea {
 
 .showcase-stats strong {
   color: var(--accent);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 1.45rem;
 }
 
@@ -1191,7 +1214,7 @@ textarea {
 .sidebar-label {
   padding: 0 12px 10px;
   color: #627593;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.58rem;
   letter-spacing: 0.08em;
 }
@@ -1214,7 +1237,9 @@ textarea {
   border-radius: 11px;
   color: #94a6c1;
   font-size: 0.78rem;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
 .nav-item:hover {
@@ -1297,7 +1322,7 @@ textarea {
 .app-main {
   min-width: 0;
   flex: 1;
-  margin-right: 250px;
+  margin-left: 250px;
 }
 
 .topbar {
@@ -1322,7 +1347,7 @@ textarea {
 
 .topbar-kicker {
   color: #65738b;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.63rem;
 }
 
@@ -1504,7 +1529,7 @@ textarea {
 .stat-card > strong {
   overflow: hidden;
   color: var(--navy);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: clamp(1.35rem, 2.2vw, 1.9rem);
   letter-spacing: -0.08em;
   text-overflow: ellipsis;
@@ -1627,7 +1652,7 @@ textarea {
 
 .booking-row-amount strong {
   color: #42516a;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.7rem;
 }
 
@@ -1701,7 +1726,11 @@ textarea {
   border-radius: var(--radius);
   color: #fff;
   background:
-    radial-gradient(circle at 81% 25%, rgba(202, 255, 114, 0.16), transparent 23%),
+    radial-gradient(
+      circle at 81% 25%,
+      rgba(202, 255, 114, 0.16),
+      transparent 23%
+    ),
     linear-gradient(105deg, #142541, #0b1729);
 }
 
@@ -1763,7 +1792,7 @@ textarea {
   border-radius: 99px;
   color: #6e80a0;
   background: #dfe9f8;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.59rem;
 }
 
@@ -1819,7 +1848,7 @@ textarea {
 
 .amount-cell {
   color: var(--navy) !important;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.68rem !important;
   white-space: nowrap;
 }
@@ -1878,7 +1907,7 @@ textarea {
   border-radius: 10px;
   color: #5876a6;
   background: #eaf1fc;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.63rem;
 }
 
@@ -1913,7 +1942,7 @@ textarea {
 
 .calculation-strip strong {
   color: var(--navy);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.75rem;
 }
 
@@ -2066,7 +2095,12 @@ textarea {
   overflow: hidden;
   border-radius: 11px;
   background:
-    linear-gradient(29deg, transparent 47%, rgba(120, 157, 199, 0.43) 48% 50%, transparent 51%),
+    linear-gradient(
+      29deg,
+      transparent 47%,
+      rgba(120, 157, 199, 0.43) 48% 50%,
+      transparent 51%
+    ),
     linear-gradient(140deg, #dceafb, #eff6fb);
 }
 
@@ -2260,7 +2294,7 @@ textarea {
   border-radius: 9px;
   color: #5e7ba8;
   background: #eff4fc;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.59rem;
 }
 
@@ -2292,7 +2326,7 @@ textarea {
 
 .selected-item > span:last-child {
   color: #687893;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.65rem;
   white-space: nowrap;
 }
@@ -2312,7 +2346,7 @@ textarea {
   display: block;
   padding-bottom: 20px;
   color: var(--navy);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 1.75rem;
   letter-spacing: -0.08em;
 }
@@ -2450,7 +2484,20 @@ textarea {
   width: 84%;
   height: 35%;
   background: rgba(255, 255, 255, 0.82);
-  clip-path: polygon(0 48%, 45% 42%, 72% 0, 77% 5%, 63% 43%, 100% 47%, 100% 54%, 64% 57%, 79% 95%, 72% 100%, 44% 59%, 0 55%);
+  clip-path: polygon(
+    0 48%,
+    45% 42%,
+    72% 0,
+    77% 5%,
+    63% 43%,
+    100% 47%,
+    100% 54%,
+    64% 57%,
+    79% 95%,
+    72% 100%,
+    44% 59%,
+    0 55%
+  );
 }
 
 .lookup-copy h2 {
@@ -2496,7 +2543,9 @@ textarea {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #fff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .catalog-card:hover {
@@ -2576,7 +2625,7 @@ textarea {
   border-radius: 17px;
   color: var(--navy);
   background: linear-gradient(145deg, var(--accent), #eaf8cf);
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -2592,7 +2641,7 @@ textarea {
   gap: 17px;
   margin: 13px 0 16px;
   color: #8c99ab;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.62rem;
 }
 
@@ -2620,9 +2669,14 @@ textarea {
   border-radius: 14px;
   color: #5f779e;
   background:
-    linear-gradient(45deg, transparent 48%, rgba(111, 151, 196, 0.35) 49% 51%, transparent 52%),
+    linear-gradient(
+      45deg,
+      transparent 48%,
+      rgba(111, 151, 196, 0.35) 49% 51%,
+      transparent 52%
+    ),
     #eff5fd;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.75rem;
 }
 
@@ -2775,7 +2829,7 @@ textarea {
 
 .notification-event {
   color: #6f8ab3;
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.58rem;
 }
 
