@@ -1,3 +1,5 @@
+
+---
 # Travel Booking Microservices
 
 پلتفرم event-driven رزرو سفر با .NET، RabbitMQ، MassTransit، PostgreSQL و Keycloak.
@@ -6,7 +8,6 @@
 
 ```powershell
 Copy-Item .env.example .env
-# مقادیر حساس داخل .env را تغییر دهید
 docker compose up -d --build
 ```
 
