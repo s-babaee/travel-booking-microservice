@@ -13,8 +13,20 @@
         "clientRole": false
       },
       {
-        "name": "user",
-        "description": "Standard authenticated user",
+        "name": "Customer",
+        "description": "Default customer role",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "Support",
+        "description": "Customer support role",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "HotelOwner",
+        "description": "Hotel owner role",
         "composite": false,
         "clientRole": false
       }
@@ -33,6 +45,22 @@
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": true,
       "frontchannelLogout": true
+      ,
+      "protocolMappers": [
+        {
+          "name": "permissions",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "permission",
+            "jsonType.label": "String"
+          }
+        }
+      ]
     }
   ],
   "users": [

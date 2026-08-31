@@ -4,6 +4,7 @@ using BookingPaymentResponse = BuildingBlocks.Contracts.Integrations.AuthorizePa
 using Payment.Api.Application.Abstractions;
 using Payment.Api.Application.Contracts;
 using Payment.Api.Application.Exceptions;
+using BuildingBlocks.Authorization;
 using Payment.Api.Domain.Entities;
 using Payment.Api.Domain.Enums;
 
@@ -216,7 +217,7 @@ public sealed class PaymentService(
 
     private void EnsureOwnerOrAdmin(Guid userId)
     {
-        if (currentUser.IsAdmin())
+        if (currentUser.HasPermission(PermissionCatalog.PaymentsViewAll))
         {
             return;
         }

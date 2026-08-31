@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using Booking.Api.Application.Abstractions;
 using Booking.Api.Application.Exceptions;
 using BuildingBlocks.Contracts.Integrations;
@@ -7,7 +8,8 @@ namespace Booking.Api.Infrastructure.Integrations;
 
 public sealed class InventoryHttpGateway(
     HttpClient httpClient,
-    ILogger<InventoryHttpGateway> logger) : IInventoryGateway
+    ILogger<InventoryHttpGateway> logger,
+    IHttpContextAccessor httpContextAccessor) : IInventoryGateway
 {
     public Task<InventoryHoldResult> HoldHotelAsync(
         HoldHotelCommand command,
@@ -63,10 +65,7 @@ public sealed class InventoryHttpGateway(
     {
         try
         {
-            using var response = await httpClient.PostAsJsonAsync(
-                path,
-                request,
-                cancellationToken);
+            using var response = await SendAsync(path, request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 var detail = await response.Content.ReadAsStringAsync(
@@ -115,7 +114,7 @@ public sealed class InventoryHttpGateway(
 
         try
         {
-            using var response = await httpClient.PostAsJsonAsync(
+            using var response = await SendAsync(
                 path,
                 new CompleteInventoryHoldRequest(holdId),
                 cancellationToken);
@@ -144,6 +143,28 @@ public sealed class InventoryHttpGateway(
                 "Inventory Service",
                 "the service could not be reached.");
         }
+    }
+
+    private async Task<HttpResponseMessage> SendAsync<TRequest>(
+        string path,
+        TRequest request,
+        CancellationToken cancellationToken)
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Post, path)
+        {
+            Content = JsonContent.Create(request)
+        };
+        var authorization = httpContextAccessor.HttpContext?
+            .Request.Headers.Authorization.ToString();
+        if (!string.IsNullOrWhiteSpace(authorization)
+            && AuthenticationHeaderValue.TryParse(
+                authorization,
+                out var header))
+        {
+            message.Headers.Authorization = header;
+        }
+
+        return await httpClient.SendAsync(message, cancellationToken);
     }
 
     private sealed record InventoryHoldResponse(

@@ -1,5 +1,6 @@
 using Flight.Api.Application.Abstractions;
 using Flight.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flight.Api.Controllers;
@@ -16,6 +17,7 @@ public sealed class FlightScheduleController : ControllerBase
     }
 
     [HttpPost("flights/{flightId:guid}/schedules")]
+    [HasPermission(PermissionCatalog.FlightsCreate)]
     [ProducesResponseType(typeof(FlightScheduleResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<FlightScheduleResponse>> Create(
         Guid flightId,
@@ -26,21 +28,30 @@ public sealed class FlightScheduleController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { scheduleId = response.Id }, response);
     }
 
+
+
     [HttpGet("flights/{flightId:guid}/schedules")]
+    [HasPermission(PermissionCatalog.FlightsView)]
     [ProducesResponseType(typeof(IReadOnlyList<FlightScheduleResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<FlightScheduleResponse>>> ListByFlight(
         Guid flightId,
         CancellationToken cancellationToken) =>
         Ok(await _service.ListByFlightAsync(flightId, cancellationToken));
 
+
+
     [HttpGet("schedules/{scheduleId:guid}")]
+    [HasPermission(PermissionCatalog.FlightsView)]
     [ProducesResponseType(typeof(FlightScheduleResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FlightScheduleResponse>> GetById(
         Guid scheduleId,
         CancellationToken cancellationToken) =>
         Ok(await _service.GetAsync(scheduleId, cancellationToken));
 
+
+
     [HttpPut("schedules/{scheduleId:guid}")]
+    [HasPermission(PermissionCatalog.FlightsUpdate)]
     [ProducesResponseType(typeof(FlightScheduleResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FlightScheduleResponse>> Update(
         Guid scheduleId,
@@ -48,7 +59,10 @@ public sealed class FlightScheduleController : ControllerBase
         CancellationToken cancellationToken) =>
         Ok(await _service.UpdateAsync(scheduleId, request, cancellationToken));
 
+
+
     [HttpDelete("schedules/{scheduleId:guid}")]
+    [HasPermission(PermissionCatalog.FlightsDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid scheduleId,

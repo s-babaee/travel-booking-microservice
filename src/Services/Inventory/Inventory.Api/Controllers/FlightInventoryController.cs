@@ -1,10 +1,13 @@
 using Inventory.Api.Application.Abstractions;
 using Inventory.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/inventory/flights")]
 public sealed class FlightInventoryController : ControllerBase
 {
@@ -16,6 +19,7 @@ public sealed class FlightInventoryController : ControllerBase
     }
 
     [HttpPost("hold")]
+    [HasPermission(PermissionCatalog.BookingsCreate)]
     [ProducesResponseType(typeof(InventoryHoldResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<InventoryHoldResponse>> Hold(
         [FromBody] FlightHoldRequest request,
@@ -25,6 +29,7 @@ public sealed class FlightInventoryController : ControllerBase
     }
 
     [HttpPost("confirm")]
+    [HasPermission(PermissionCatalog.BookingsCreate)]
     [ProducesResponseType(typeof(InventoryHoldResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<InventoryHoldResponse>> Confirm(
         [FromBody] ConfirmReleaseRequest request,
@@ -34,6 +39,7 @@ public sealed class FlightInventoryController : ControllerBase
     }
 
     [HttpPost("release")]
+    [HasPermission(PermissionCatalog.BookingsCancelOwn)]
     [ProducesResponseType(typeof(InventoryHoldResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<InventoryHoldResponse>> Release(
         [FromBody] ConfirmReleaseRequest request,
@@ -43,6 +49,7 @@ public sealed class FlightInventoryController : ControllerBase
     }
 
     [HttpGet("{flightId:guid}/availability")]
+    [HasPermission(PermissionCatalog.FlightsView)]
     [ProducesResponseType(
         typeof(IReadOnlyList<FlightAvailabilityResponse>),
         StatusCodes.Status200OK)]
@@ -61,6 +68,7 @@ public sealed class FlightInventoryController : ControllerBase
     }
 
     [HttpPost("adjust")]
+    [HasPermission(PermissionCatalog.HotelsInventoryManage)]
     [ProducesResponseType(
         typeof(IReadOnlyList<FlightAvailabilityResponse>),
         StatusCodes.Status200OK)]

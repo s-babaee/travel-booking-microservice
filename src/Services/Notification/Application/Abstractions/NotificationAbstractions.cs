@@ -64,7 +64,7 @@ public interface IUnitOfWork
 public interface ICurrentUser
 {
     Guid GetRequiredUserId();
-    bool IsAdmin();
+    bool HasPermission(string permission);
 }
 
 public interface INotificationEventHandler

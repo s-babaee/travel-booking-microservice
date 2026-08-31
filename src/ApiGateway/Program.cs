@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ApiGateway.Infrastructure.Security;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,25 +14,11 @@ var keycloakRealm = builder.Configuration["Keycloak:Realm"] ?? "travel";
 var keycloakAuthority =
     $"{keycloakBaseUrl.TrimEnd('/')}/realms/{keycloakRealm}";
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = keycloakAuthority;
-        options.RequireHttpsMetadata = builder.Environment.IsProduction();
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = keycloakAuthority,
-            ValidateAudience = false,
-            NameClaimType = "preferred_username",
-            RoleClaimType = ClaimTypes.Role
-        };
-    });
+builder.Services.AddKeycloakJwt(builder.Configuration, builder.Environment);
 
 builder.Services.AddTransient<IClaimsTransformation,
     KeycloakClaimsTransformation>();
+builder.Services.AddPermissionAuthorization();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -47,7 +34,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("gateway-admin", policy =>
     {
-        policy.RequireRole("admin");
+        policy.RequireAuthenticatedUser();
+        policy.AddRequirements(
+            new PermissionRequirement(PermissionCatalog.UsersManage));
     });
 });
 

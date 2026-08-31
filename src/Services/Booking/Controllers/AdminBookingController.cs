@@ -1,13 +1,14 @@
 using Booking.Api.Application.Contracts;
 using Booking.Api.Application.Services;
 using Booking.Api.Domain.Enums;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[HasPermission(PermissionCatalog.BookingsReadAll)]
 [Route("api/admin/bookings")]
 public sealed class AdminBookingController(BookingService service) : ControllerBase
 {
@@ -32,6 +33,8 @@ public sealed class AdminBookingController(BookingService service) : ControllerB
                 pageSize),
             cancellationToken));
 
+
+
     [HttpPatch("{bookingId:guid}/status")]
     public async Task<ActionResult<BookingResponse>> ChangeStatus(
         Guid bookingId,
@@ -41,6 +44,8 @@ public sealed class AdminBookingController(BookingService service) : ControllerB
             bookingId,
             request,
             cancellationToken));
+
+
 
     [HttpGet("stats")]
     public async Task<ActionResult<BookingStatsResponse>> Stats(

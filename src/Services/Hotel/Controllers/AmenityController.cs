@@ -1,12 +1,13 @@
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[Authorize]
 [Route("api")]
 public sealed class AmenityController : ControllerBase
 {
@@ -18,6 +19,7 @@ public sealed class AmenityController : ControllerBase
     }
 
     [HttpPost("amenities")]
+    [HasPermission(PermissionCatalog.HotelsCreate)]
     [ProducesResponseType(typeof(AmenityResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<AmenityResponse>> Create(
         [FromBody] CreateAmenityRequest request,
@@ -29,7 +31,10 @@ public sealed class AmenityController : ControllerBase
         return Created($"api/amenities/{response.Id}", response);
     }
 
+
+
     [HttpGet("amenities")]
+    [HasPermission(PermissionCatalog.HotelsView)]
     [ProducesResponseType(typeof(IReadOnlyList<AmenityResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<AmenityResponse>>> List(
         CancellationToken cancellationToken)
@@ -37,7 +42,10 @@ public sealed class AmenityController : ControllerBase
         return Ok(await _amenityService.ListAsync(cancellationToken));
     }
 
+
+
     [HttpPut("amenities/{amenityId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(typeof(AmenityResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<AmenityResponse>> Update(
         Guid amenityId,
@@ -50,7 +58,10 @@ public sealed class AmenityController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpDelete("amenities/{amenityId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid amenityId,
@@ -60,7 +71,10 @@ public sealed class AmenityController : ControllerBase
         return NoContent();
     }
 
+
+
     [HttpPost("hotels/{hotelId:guid}/amenities/{amenityId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> AssignToHotel(
         Guid hotelId,
@@ -74,7 +88,10 @@ public sealed class AmenityController : ControllerBase
         return NoContent();
     }
 
+
+
     [HttpDelete("hotels/{hotelId:guid}/amenities/{amenityId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RemoveFromHotel(
         Guid hotelId,
@@ -88,7 +105,10 @@ public sealed class AmenityController : ControllerBase
         return NoContent();
     }
 
+
+
     [HttpPost("room-types/{roomTypeId:guid}/amenities/{amenityId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> AssignToRoomType(
         Guid roomTypeId,
@@ -102,7 +122,10 @@ public sealed class AmenityController : ControllerBase
         return NoContent();
     }
 
+
+
     [HttpDelete("room-types/{roomTypeId:guid}/amenities/{amenityId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RemoveFromRoomType(
         Guid roomTypeId,

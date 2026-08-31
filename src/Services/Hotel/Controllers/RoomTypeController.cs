@@ -1,12 +1,13 @@
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[Authorize]
 [Route("api")]
 public sealed class RoomTypeController : ControllerBase
 {
@@ -18,6 +19,7 @@ public sealed class RoomTypeController : ControllerBase
     }
 
     [HttpPost("hotels/{hotelId:guid}/room-types")]
+    [HasPermission(PermissionCatalog.HotelsCreate)]
     [ProducesResponseType(typeof(RoomTypeResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<RoomTypeResponse>> Create(
         Guid hotelId,
@@ -35,7 +37,10 @@ public sealed class RoomTypeController : ControllerBase
             response);
     }
 
+
+
     [HttpGet("hotels/{hotelId:guid}/room-types")]
+    [HasPermission(PermissionCatalog.HotelsView)]
     [ProducesResponseType(typeof(IReadOnlyList<RoomTypeResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<RoomTypeResponse>>> ListByHotel(
         Guid hotelId,
@@ -46,7 +51,10 @@ public sealed class RoomTypeController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpGet("room-types/{roomTypeId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsView)]
     [ProducesResponseType(typeof(RoomTypeResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<RoomTypeResponse>> GetById(
         Guid roomTypeId,
@@ -57,7 +65,10 @@ public sealed class RoomTypeController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpPut("room-types/{roomTypeId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(typeof(RoomTypeResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<RoomTypeResponse>> Update(
         Guid roomTypeId,
@@ -70,7 +81,10 @@ public sealed class RoomTypeController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpPatch("room-types/{roomTypeId:guid}/status")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(typeof(RoomTypeResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<RoomTypeResponse>> ChangeStatus(
         Guid roomTypeId,
@@ -83,7 +97,10 @@ public sealed class RoomTypeController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpDelete("room-types/{roomTypeId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid roomTypeId,

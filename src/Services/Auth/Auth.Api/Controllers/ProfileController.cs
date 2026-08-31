@@ -1,6 +1,7 @@
 using Auth.Api.Application.Abstractions;
 using Auth.Api.Application.Contracts;
 using Auth.Api.Infrastructure.Web;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,6 @@ public sealed class ProfileController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly IRoleService _roleService;
-    private readonly IPasswordService _passwordService;
 
     public ProfileController(
         IUserService userService,
@@ -22,10 +22,10 @@ public sealed class ProfileController : ControllerBase
     {
         _userService = userService;
         _roleService = roleService;
-        _passwordService = passwordService;
     }
 
     [HttpGet("me")]
+    [HasPermission(PermissionCatalog.ProfileReadOwn)]
     public async Task<ActionResult<UserResponse>> Me(CancellationToken cancellationToken)
     {
         var user = await _userService.GetAsync(
@@ -34,10 +34,10 @@ public sealed class ProfileController : ControllerBase
         return user is null ? NotFound() : Ok(user);
     }
 
+
     [HttpPut("me")]
-    public Task<UserResponse> Update(
-        UpdateUserCommand command,
-        CancellationToken cancellationToken)
+    [HasPermission(PermissionCatalog.ProfileUpdateOwn)]
+    public Task<UserResponse> Update(UpdateUserCommand command, CancellationToken cancellationToken)
     {
         return _userService.UpdateAsync(
             User.GetRequiredUserId(),
@@ -45,7 +45,9 @@ public sealed class ProfileController : ControllerBase
             cancellationToken);
     }
 
+
     [HttpGet("me/roles")]
+    [HasPermission(PermissionCatalog.ProfileReadOwn)]
     public Task<IReadOnlyList<RoleResponse>> Roles(CancellationToken cancellationToken)
     {
         return _roleService.GetUserRolesAsync(
@@ -53,15 +55,4 @@ public sealed class ProfileController : ControllerBase
             cancellationToken);
     }
 
-    [HttpPatch("me/password")]
-    public async Task<IActionResult> ChangePassword(
-        ChangePasswordCommand command,
-        CancellationToken cancellationToken)
-    {
-        await _passwordService.ChangeAsync(
-            User.GetRequiredUserId(),
-            command,
-            cancellationToken);
-        return NoContent();
-    }
 }

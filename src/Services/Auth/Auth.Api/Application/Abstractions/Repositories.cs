@@ -12,6 +12,7 @@ public interface IUserRepository
 public interface IRoleRepository
 {
     Task<Role?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken);
     Task<IReadOnlyList<Role>> ListAsync(CancellationToken cancellationToken);
     Task AddAsync(Role role, CancellationToken cancellationToken);
 }
@@ -36,6 +37,7 @@ public interface IRolePermissionRepository
     Task<bool> ExistsAsync(Guid roleId, Guid permissionId, CancellationToken cancellationToken);
     Task AddAsync(RolePermission rolePermission, CancellationToken cancellationToken);
     Task RemoveAsync(Guid roleId, Guid permissionId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Permission>> GetPermissionsAsync(Guid roleId, CancellationToken cancellationToken);
 }
 
 public interface IPasswordResetTokenRepository

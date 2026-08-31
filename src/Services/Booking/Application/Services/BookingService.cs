@@ -3,6 +3,7 @@ using Booking.Api.Application.Contracts;
 using Booking.Api.Application.Exceptions;
 using Booking.Api.Domain.Entities;
 using Booking.Api.Domain.Enums;
+using BuildingBlocks.Authorization;
 using BuildingBlocks.Contracts.Events;
 using BookingEntity = Booking.Api.Domain.Entities.Booking;
 
@@ -539,7 +540,7 @@ public sealed class BookingService(
 
     private void EnsureOwnerOrAdmin(BookingEntity booking)
     {
-        if (!currentUser.IsAdmin())
+        if (!currentUser.HasPermission(PermissionCatalog.BookingsReadAll))
         {
             EnsureUser(booking.UserId);
         }
@@ -547,7 +548,7 @@ public sealed class BookingService(
 
     private void EnsureUser(Guid userId)
     {
-        if (currentUser.IsAdmin())
+        if (currentUser.HasPermission(PermissionCatalog.BookingsReadAll))
         {
             return;
         }

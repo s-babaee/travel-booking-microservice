@@ -1,9 +1,8 @@
-using System.Security.Claims;
+using System.Text.Json.Serialization;
+using BuildingBlocks.Authorization;
 using BuildingBlocks.Messaging;
 using MassTransit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Payment.Api.Application.Abstractions;
 using Payment.Api.Application.Services;
@@ -13,8 +12,9 @@ using Payment.Api.Infrastructure.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------- Database --------------------
-
+// ==========================================
+// 1. Configuration & Options
+// ==========================================
 var paymentDbConnectionString =
     builder.Configuration.GetConnectionString("PaymentDb");
 
@@ -24,6 +24,31 @@ if (string.IsNullOrWhiteSpace(paymentDbConnectionString))
         "ConnectionStrings:PaymentDb was not configured.");
 }
 
+var brokerHost =
+    builder.Configuration["MessageBroker:Host"] ?? "localhost";
+
+var brokerPort =
+    builder.Configuration.GetValue<ushort>("MessageBroker:Port", 5672);
+
+var brokerVirtualHost =
+    builder.Configuration["MessageBroker:VirtualHost"] ?? "/";
+
+var brokerUsername =
+    builder.Configuration["MessageBroker:Username"];
+
+var brokerPassword =
+    builder.Configuration["MessageBroker:Password"];
+
+if (string.IsNullOrWhiteSpace(brokerUsername)
+    || string.IsNullOrWhiteSpace(brokerPassword))
+{
+    throw new InvalidOperationException(
+        "MessageBroker:Username and MessageBroker:Password must be configured.");
+}
+
+// ==========================================
+// 2. Database & Repositories (Persistence)
+// ==========================================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(paymentDbConnectionString));
 
@@ -36,12 +61,14 @@ builder.Services.AddScoped<IPaymentRepository>(services =>
 builder.Services.AddScoped<IRefundRepository>(services =>
     services.GetRequiredService<AppDbContext>());
 
-// -------------------- Application Services --------------------
-
+// ==========================================
+// 3. Application Services & External Clients
+// ==========================================
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
-builder.Services.AddScoped<IPaymentEventPublisher,
+builder.Services.AddScoped<
+    IPaymentEventPublisher,
     MassTransitPaymentEventPublisher>();
 
 builder.Services.AddSingleton<IPaymentProvider, MockPaymentProvider>();
@@ -49,59 +76,45 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHttpContextAccessor();
 
-// -------------------- Authentication / Keycloak --------------------
-
-var keycloakBaseUrl = builder.Configuration["Keycloak:BaseUrl"]
-    ?? "http://localhost:8081";
-
-var keycloakRealm = builder.Configuration["Keycloak:Realm"]
-    ?? "travel";
-
-var keycloakAuthority =
-    $"{keycloakBaseUrl.TrimEnd('/')}/realms/{keycloakRealm}";
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddMassTransit(configurator =>
+{
+    configurator.UsingRabbitMq((_, cfg) =>
     {
-        options.Authority = keycloakAuthority;
+        cfg.Host(
+            brokerHost,
+            brokerPort,
+            brokerVirtualHost,
+            host =>
+            {
+                host.Username(brokerUsername);
+                host.Password(brokerPassword);
+            });
 
-        // در محیط Production بهتر است Keycloak با HTTPS باشد.
-        options.RequireHttpsMetadata = builder.Environment.IsProduction();
-
-        // claimها را بدون تبدیل پیش‌فرض دات‌نت نگه می‌دارد.
-        options.MapInboundClaims = false;
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = keycloakAuthority,
-
-            // فعلاً Audience بررسی نمی‌شود.
-            // اگر در Keycloak audience را تنظیم کردی، بهتر است true شود.
-            ValidateAudience = false,
-
-            NameClaimType = "preferred_username",
-            RoleClaimType = ClaimTypes.Role
-        };
+        RabbitMqTopology.ConfigureMessageTopology(cfg);
     });
+});
 
-builder.Services.AddAuthorization();
+// ==========================================
+// 4. Authentication & Authorization
+// ==========================================
+builder.Services.AddKeycloakJwt(
+    builder.Configuration,
+    builder.Environment);
 
-// -------------------- Controllers / JSON --------------------
+builder.Services.AddPermissionAuthorization();
 
-builder.Services.AddControllers()
+// ==========================================
+// 5. Web & Swagger Setup
+// ==========================================
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
-        // enumها در خروجی JSON به شکل متن برگردند، نه عدد.
         options.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter());
+            new JsonStringEnumConverter());
     });
 
-// برای کشف Controller endpointها توسط Swagger لازم است.
 builder.Services.AddEndpointsApiExplorer();
-
-// -------------------- Swagger --------------------
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -112,7 +125,6 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Payment and refund service API."
     });
 
-    // تعریف JWT Bearer برای دکمه Authorize در Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -121,11 +133,9 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description =
-            "توکن Keycloak را وارد کنید. فقط خود JWT را وارد کنید؛ " +
-            "Swagger به‌صورت خودکار Bearer را اضافه می‌کند."
+            "Enter the Keycloak access token. Swagger automatically adds the Bearer prefix."
     });
 
-    // اعمال JWT روی تمام endpointهای Swagger
     options.AddSecurityRequirement(document =>
         new OpenApiSecurityRequirement
         {
@@ -133,58 +143,25 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 
-// -------------------- RabbitMQ / MassTransit --------------------
-
-var broker = builder.Configuration.GetSection("MessageBroker");
-
-var brokerHost = broker["Host"] ?? "localhost";
-var brokerVirtualHost = broker["VirtualHost"] ?? "/";
-var brokerUsername = broker["Username"];
-var brokerPassword = broker["Password"];
-
-if (string.IsNullOrWhiteSpace(brokerUsername)
-    || string.IsNullOrWhiteSpace(brokerPassword))
-{
-    throw new InvalidOperationException(
-        "MessageBroker:Username and MessageBroker:Password must be configured.");
-}
-
-builder.Services.AddMassTransit(configurator =>
-{
-    configurator.UsingRabbitMq((_, cfg) =>
-    {
-        cfg.Host(brokerHost, brokerVirtualHost, host =>
-        {
-            host.Username(brokerUsername);
-            host.Password(brokerPassword);
-        });
-
-        RabbitMqTopology.ConfigureMessageTopology(cfg);
-    });
-});
-
-// -------------------- Build --------------------
-
+// ==========================================
+// 6. Application Pipeline (Middleware)
+// ==========================================
 var app = builder.Build();
 
-// اجرای migration و seed احتمالی دیتابیس
+var applyMigrations = app.Configuration.GetValue(
+    "Database:ApplyMigrations",
+    defaultValue: true);
+
 await DatabaseInitializer.InitializeAsync(
     app.Services,
-    app.Configuration.GetValue("Database:ApplyMigrations", true));
+    applyMigrations);
 
-// Middleware مدیریت exceptionهای برنامه
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-// -------------------- Swagger UI --------------------
 
 if (app.Environment.IsDevelopment())
 {
-    // فایل OpenAPI JSON:
-    // /swagger/v1/swagger.json
     app.UseSwagger();
 
-    // رابط گرافیکی Swagger:
-    // /swagger
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(
@@ -195,15 +172,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// -------------------- Request Pipeline --------------------
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/health", () =>
-    Results.Ok(new { status = "ok" }));
 
 app.Run();
 

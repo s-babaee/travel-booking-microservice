@@ -1,10 +1,13 @@
 using Inventory.Api.Application.Abstractions;
 using Inventory.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/inventory/hotels")]
 public sealed class HotelInventoryController : ControllerBase
 {
@@ -16,6 +19,7 @@ public sealed class HotelInventoryController : ControllerBase
     }
 
     [HttpPost("hold")]
+    [HasPermission(PermissionCatalog.BookingsCreate)]
     [ProducesResponseType(typeof(InventoryHoldResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<InventoryHoldResponse>> Hold(
         [FromBody] HotelHoldRequest request,
@@ -24,7 +28,10 @@ public sealed class HotelInventoryController : ControllerBase
         return Ok(await _service.HoldAsync(request, cancellationToken));
     }
 
+
+
     [HttpPost("confirm")]
+    [HasPermission(PermissionCatalog.BookingsCreate)]
     [ProducesResponseType(typeof(InventoryHoldResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<InventoryHoldResponse>> Confirm(
         [FromBody] ConfirmReleaseRequest request,
@@ -33,7 +40,10 @@ public sealed class HotelInventoryController : ControllerBase
         return Ok(await _service.ConfirmAsync(request, cancellationToken));
     }
 
+
+
     [HttpPost("release")]
+    [HasPermission(PermissionCatalog.BookingsCancelOwn)]
     [ProducesResponseType(typeof(InventoryHoldResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<InventoryHoldResponse>> Release(
         [FromBody] ConfirmReleaseRequest request,
@@ -42,7 +52,10 @@ public sealed class HotelInventoryController : ControllerBase
         return Ok(await _service.ReleaseAsync(request, cancellationToken));
     }
 
+
+
     [HttpGet("{hotelId:guid}/availability")]
+    [HasPermission(PermissionCatalog.HotelsInventoryManage)]
     [ProducesResponseType(
         typeof(IReadOnlyList<HotelAvailabilityResponse>),
         StatusCodes.Status200OK)]
@@ -62,7 +75,10 @@ public sealed class HotelInventoryController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpPost("adjust")]
+    [HasPermission(PermissionCatalog.HotelsInventoryManage)]
     [ProducesResponseType(
         typeof(IReadOnlyList<HotelAvailabilityResponse>),
         StatusCodes.Status200OK)]

@@ -592,6 +592,11 @@ public sealed class KeycloakIdentityProvider : IIdentityProvider
                 clientRole = false
             },
             cancellationToken);
+        if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            return;
+        }
+
         await EnsureSuccessAsync(response);
     }
 
@@ -605,7 +610,8 @@ public sealed class KeycloakIdentityProvider : IIdentityProvider
         return $"admin/realms/{Uri.EscapeDataString(_options.Realm)}/{suffix}";
     }
 
-    private static string PermissionRoleName(string code) => $"permission:{code}";
+    private static string PermissionRoleName(string code) =>
+        $"permission:{code.Trim().ToLowerInvariant()}";
 
     private static async Task EnsureSuccessAsync(HttpResponseMessage response)
     {

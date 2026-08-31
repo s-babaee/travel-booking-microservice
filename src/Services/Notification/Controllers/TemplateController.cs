@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Notification.Application.Contracts;
 using Notification.Application.Services;
+using BuildingBlocks.Authorization;
 
 namespace Notification.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[HasPermission(PermissionCatalog.NotificationsManage)]
 [Route("api/notification-templates")]
 public sealed class TemplateController(
     NotificationService service) : ControllerBase

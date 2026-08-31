@@ -1,12 +1,13 @@
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[Authorize]
 [Route("api/hotels")]
 public sealed class HotelController : ControllerBase
 {
@@ -18,6 +19,7 @@ public sealed class HotelController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(PermissionCatalog.HotelsCreate)]
     [ProducesResponseType(typeof(HotelResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<HotelResponse>> Create(
         [FromBody] CreateHotelRequest request,
@@ -33,7 +35,10 @@ public sealed class HotelController : ControllerBase
             response);
     }
 
+
+
     [HttpGet("{hotelId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsView)]
     [ProducesResponseType(typeof(HotelResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<HotelResponse>> GetById(
         Guid hotelId,
@@ -44,7 +49,19 @@ public sealed class HotelController : ControllerBase
             cancellationToken));
     }
 
+
+    [HttpGet]
+    [HasPermission(PermissionCatalog.HotelsView)]
+    [ProducesResponseType(typeof(IReadOnlyList<HotelResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<HotelResponse>>> GetAll(
+    CancellationToken cancellationToken)
+    {
+        return Ok(await _hotelService.GetAllAsync(cancellationToken));
+    }
+
+
     [HttpPut("{hotelId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(typeof(HotelResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<HotelResponse>> Update(
         Guid hotelId,
@@ -57,7 +74,10 @@ public sealed class HotelController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpPatch("{hotelId:guid}/status")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(typeof(HotelResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<HotelResponse>> ChangeStatus(
         Guid hotelId,
@@ -70,7 +90,10 @@ public sealed class HotelController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpDelete("{hotelId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid hotelId,

@@ -1,5 +1,6 @@
 using Flight.Api.Application.Abstractions;
 using Flight.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flight.Api.Controllers;
@@ -16,6 +17,7 @@ public sealed class FlightController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(PermissionCatalog.FlightsCreate)]
     [ProducesResponseType(typeof(FlightResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<FlightResponse>> Create(
         [FromBody] CreateFlightRequest request,
@@ -25,14 +27,20 @@ public sealed class FlightController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { flightId = response.Id }, response);
     }
 
+
+
     [HttpGet("{flightId:guid}")]
+    [HasPermission(PermissionCatalog.FlightsView)]
     [ProducesResponseType(typeof(FlightResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FlightResponse>> GetById(
         Guid flightId,
         CancellationToken cancellationToken) =>
         Ok(await _service.GetAsync(flightId, cancellationToken));
 
+
+
     [HttpPut("{flightId:guid}")]
+    [HasPermission(PermissionCatalog.FlightsUpdate)]
     [ProducesResponseType(typeof(FlightResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FlightResponse>> Update(
         Guid flightId,
@@ -40,7 +48,10 @@ public sealed class FlightController : ControllerBase
         CancellationToken cancellationToken) =>
         Ok(await _service.UpdateAsync(flightId, request, cancellationToken));
 
+
+
     [HttpPatch("{flightId:guid}/status")]
+    [HasPermission(PermissionCatalog.FlightsUpdate)]
     [ProducesResponseType(typeof(FlightResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FlightResponse>> ChangeStatus(
         Guid flightId,
@@ -48,7 +59,10 @@ public sealed class FlightController : ControllerBase
         CancellationToken cancellationToken) =>
         Ok(await _service.ChangeStatusAsync(flightId, request, cancellationToken));
 
+
+
     [HttpDelete("{flightId:guid}")]
+    [HasPermission(PermissionCatalog.FlightsDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid flightId,

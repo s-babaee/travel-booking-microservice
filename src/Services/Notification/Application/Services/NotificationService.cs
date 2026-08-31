@@ -258,7 +258,8 @@ public sealed class NotificationService(
 
     private void EnsureOwner(Guid userId)
     {
-        if (currentUser.IsAdmin())
+        if (currentUser.HasPermission(
+                BuildingBlocks.Authorization.PermissionCatalog.NotificationsManage))
         {
             return;
         }

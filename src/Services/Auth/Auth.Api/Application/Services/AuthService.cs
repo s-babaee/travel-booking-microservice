@@ -3,6 +3,7 @@ using Auth.Api.Application.Contracts;
 using Auth.Api.Application.Exceptions;
 using Auth.Api.Domain.Entities;
 using Auth.Api.Domain.Enums;
+using BuildingBlocks.Authorization;
 
 namespace Auth.Api.Application.Services;
 
@@ -10,17 +11,23 @@ public sealed class AuthService : IAuthService
 {
     private readonly IIdentityProvider _identityProvider;
     private readonly IUserRepository _users;
+    private readonly IRoleRepository _roles;
+    private readonly IUserRoleRepository _userRoles;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
     public AuthService(
         IIdentityProvider identityProvider,
         IUserRepository users,
+        IRoleRepository roles,
+        IUserRoleRepository userRoles,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
     {
         _identityProvider = identityProvider;
         _users = users;
+        _roles = roles;
+        _userRoles = userRoles;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
     }
@@ -67,6 +74,9 @@ public sealed class AuthService : IAuthService
         }
 
         await _users.AddAsync(user, cancellationToken);
+        await AssignDefaultCustomerRoleAsync(
+            user.Id,
+            cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return user.ToResponse();
@@ -78,6 +88,7 @@ public sealed class AuthService : IAuthService
         CancellationToken cancellationToken)
     {
         var tokens = await _identityProvider.LoginAsync(command, cancellationToken);
+        var shouldIssueFreshToken = false;
         var localUser = await _users.GetByIdAsync(tokens.UserId, cancellationToken);
         if (localUser is null)
         {
@@ -100,11 +111,56 @@ public sealed class AuthService : IAuthService
                 }
 
                 await _users.AddAsync(user, cancellationToken);
+                await AssignDefaultCustomerRoleAsync(
+                    user.Id,
+                    cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+                shouldIssueFreshToken = true;
+            }
+        }
+        else
+        {
+            var roles = await _userRoles.GetRolesAsync(
+                localUser.Id,
+                cancellationToken);
+            if (roles.Count == 0)
+            {
+                await AssignDefaultCustomerRoleAsync(
+                    localUser.Id,
+                    cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                shouldIssueFreshToken = true;
             }
         }
 
-        return tokens;
+        return shouldIssueFreshToken
+            ? await _identityProvider.LoginAsync(command, cancellationToken)
+            : tokens;
+    }
+
+    private async Task AssignDefaultCustomerRoleAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var customerRole = await _roles.GetByNameAsync(
+            RoleCatalog.Customer,
+            cancellationToken)
+            ?? throw new InvalidOperationException(
+                "The Customer role has not been seeded.");
+
+        if (!await _userRoles.ExistsAsync(
+                userId,
+                customerRole.Id,
+                cancellationToken))
+        {
+            await _identityProvider.AssignRoleAsync(
+                userId,
+                customerRole.Name,
+                cancellationToken);
+            await _userRoles.AddAsync(
+                new UserRole(userId, customerRole.Id),
+                cancellationToken);
+        }
     }
 
     public Task<AuthTokenResponse> RefreshTokenAsync(

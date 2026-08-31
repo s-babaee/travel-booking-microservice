@@ -1,12 +1,13 @@
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[Authorize]
 [Route("api/hotels/{hotelId:guid}/policies")]
 public sealed class HotelPolicyController : ControllerBase
 {
@@ -18,6 +19,7 @@ public sealed class HotelPolicyController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(PermissionCatalog.HotelsCreate)]
     [ProducesResponseType(typeof(HotelPolicyResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<HotelPolicyResponse>> Create(
         Guid hotelId,
@@ -35,7 +37,10 @@ public sealed class HotelPolicyController : ControllerBase
             response);
     }
 
+
+
     [HttpGet]
+    [HasPermission(PermissionCatalog.HotelsView)]
     [ProducesResponseType(typeof(IReadOnlyList<HotelPolicyResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<HotelPolicyResponse>>> List(
         Guid hotelId,
@@ -46,7 +51,10 @@ public sealed class HotelPolicyController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpPut("{policyId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(typeof(HotelPolicyResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<HotelPolicyResponse>> Update(
         Guid hotelId,
@@ -61,7 +69,10 @@ public sealed class HotelPolicyController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpDelete("{policyId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid hotelId,

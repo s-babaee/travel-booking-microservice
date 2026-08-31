@@ -1,11 +1,10 @@
-using System.Security.Claims;
+using System.Text.Json.Serialization;
+using BuildingBlocks.Authorization;
 using BuildingBlocks.Contracts.Events;
 using BuildingBlocks.Contracts.Messaging;
 using BuildingBlocks.Messaging;
 using MassTransit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Notification.Application.Abstractions;
 using Notification.Application.Services;
@@ -15,8 +14,9 @@ using Notification.Infrastructure.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------- Database --------------------
-
+// ==========================================
+// 1. Configuration & Options
+// ==========================================
 var notificationDbConnectionString =
     builder.Configuration.GetConnectionString("NotificationDb");
 
@@ -26,6 +26,31 @@ if (string.IsNullOrWhiteSpace(notificationDbConnectionString))
         "ConnectionStrings:NotificationDb was not configured.");
 }
 
+var brokerHost =
+    builder.Configuration["MessageBroker:Host"] ?? "localhost";
+
+var brokerPort =
+    builder.Configuration.GetValue<ushort>("MessageBroker:Port", 5672);
+
+var brokerVirtualHost =
+    builder.Configuration["MessageBroker:VirtualHost"] ?? "/";
+
+var brokerUsername =
+    builder.Configuration["MessageBroker:Username"];
+
+var brokerPassword =
+    builder.Configuration["MessageBroker:Password"];
+
+if (string.IsNullOrWhiteSpace(brokerUsername)
+    || string.IsNullOrWhiteSpace(brokerPassword))
+{
+    throw new InvalidOperationException(
+        "MessageBroker:Username and MessageBroker:Password must be configured.");
+}
+
+// ==========================================
+// 2. Database & Repositories (Persistence)
+// ==========================================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(notificationDbConnectionString));
 
@@ -38,8 +63,9 @@ builder.Services.AddScoped<INotificationRepository>(services =>
 builder.Services.AddScoped<INotificationTemplateRepository>(services =>
     services.GetRequiredService<AppDbContext>());
 
-// -------------------- Application Services --------------------
-
+// ==========================================
+// 3. Application Services & External Clients
+// ==========================================
 builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddScoped<INotificationEventHandler>(services =>
@@ -51,61 +77,82 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHttpContextAccessor();
 
-// -------------------- Authentication / Keycloak --------------------
-
-var keycloakBaseUrl = builder.Configuration["Keycloak:BaseUrl"]
-    ?? "http://localhost:8081";
-
-var keycloakRealm = builder.Configuration["Keycloak:Realm"]
-    ?? "travel";
-
-var keycloakAuthority =
-    $"{keycloakBaseUrl.TrimEnd('/')}/realms/{keycloakRealm}";
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = keycloakAuthority;
-
-        // در Production باید Keycloak با HTTPS در دسترس باشد.
-        options.RequireHttpsMetadata = builder.Environment.IsProduction();
-
-        // claimها همان نام اصلی Keycloak را حفظ می‌کنند.
-        options.MapInboundClaims = false;
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = keycloakAuthority,
-
-            // اگر Keycloak audience را تنظیم کردی، این مقدار را true کن.
-            ValidateAudience = false,
-
-            NameClaimType = "preferred_username",
-            RoleClaimType = ClaimTypes.Role
-        };
-    });
-
-builder.Services.AddAuthorization(options =>
+builder.Services.AddMassTransit(configurator =>
 {
-    options.AddPolicy("admin", policy => policy.RequireRole("admin"));
+    // Booking Event Consumers
+    configurator.AddConsumer<BookingConfirmedConsumer>();
+    configurator.AddConsumer<BookingFailedConsumer>();
+    configurator.AddConsumer<BookingCancellationStartedConsumer>();
+    configurator.AddConsumer<BookingCancelledConsumer>();
+
+    // Payment Event Consumers
+    configurator.AddConsumer<PaymentAuthorizedConsumer>();
+    configurator.AddConsumer<PaymentFailedConsumer>();
+    configurator.AddConsumer<PaymentRefundedConsumer>();
+
+    configurator.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(
+            brokerHost,
+            brokerPort,
+            brokerVirtualHost,
+            host =>
+            {
+                host.Username(brokerUsername);
+                host.Password(brokerPassword);
+            });
+
+        RabbitMqTopology.ConfigureMessageTopology(cfg);
+
+        cfg.ReceiveEndpoint(EventQueueNames.NotificationEvents, endpoint =>
+        {
+            endpoint.ConfigureConsumeTopology = false;
+
+            // Bind Booking event exchanges
+            endpoint.Bind(EventExchangeNames.BookingConfirmed);
+            endpoint.Bind(EventExchangeNames.BookingFailed);
+            endpoint.Bind(EventExchangeNames.BookingCancellationStarted);
+            endpoint.Bind(EventExchangeNames.BookingCancelled);
+
+            // Bind Payment event exchanges
+            endpoint.Bind(EventExchangeNames.PaymentAuthorized);
+            endpoint.Bind(EventExchangeNames.PaymentFailed);
+            endpoint.Bind(EventExchangeNames.PaymentRefunded);
+
+            // Configure Consumers
+            endpoint.ConfigureConsumer<BookingConfirmedConsumer>(context);
+            endpoint.ConfigureConsumer<BookingFailedConsumer>(context);
+            endpoint.ConfigureConsumer<BookingCancellationStartedConsumer>(context);
+            endpoint.ConfigureConsumer<BookingCancelledConsumer>(context);
+
+            endpoint.ConfigureConsumer<PaymentAuthorizedConsumer>(context);
+            endpoint.ConfigureConsumer<PaymentFailedConsumer>(context);
+            endpoint.ConfigureConsumer<PaymentRefundedConsumer>(context);
+        });
+    });
 });
 
-// -------------------- Controllers / JSON --------------------
+// ==========================================
+// 4. Authentication & Authorization
+// ==========================================
+builder.Services.AddKeycloakJwt(
+    builder.Configuration,
+    builder.Environment);
 
-builder.Services.AddControllers()
+builder.Services.AddPermissionAuthorization();
+
+// ==========================================
+// 5. Web & Swagger Setup
+// ==========================================
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
-        // Enumها در response به‌شکل string برگردند، نه عدد.
         options.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter());
+            new JsonStringEnumConverter());
     });
 
-// Swagger Controller endpointها را شناسایی می‌کند.
 builder.Services.AddEndpointsApiExplorer();
-
-// -------------------- Swagger --------------------
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -117,7 +164,6 @@ builder.Services.AddSwaggerGen(options =>
             "Notification service API for managing notifications and templates."
     });
 
-    // تنظیم JWT Bearer برای دکمه Authorize در Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -126,11 +172,9 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description =
-            "توکن Keycloak را وارد کنید. فقط خود JWT را وارد کنید؛ " +
-            "Swagger هدر Bearer را خودکار اضافه می‌کند."
+            "Enter the Keycloak access token. Swagger automatically adds the Bearer prefix."
     });
 
-    // ارسال JWT برای endpointهای محافظت‌شده
     options.AddSecurityRequirement(document =>
         new OpenApiSecurityRequirement
         {
@@ -138,76 +182,9 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 
-// -------------------- RabbitMQ / MassTransit --------------------
-
-var broker = builder.Configuration.GetSection("MessageBroker");
-
-var brokerHost = broker["Host"] ?? "localhost";
-var brokerVirtualHost = broker["VirtualHost"] ?? "/";
-var brokerUsername = broker["Username"];
-var brokerPassword = broker["Password"];
-
-if (string.IsNullOrWhiteSpace(brokerUsername)
-    || string.IsNullOrWhiteSpace(brokerPassword))
-{
-    throw new InvalidOperationException(
-        "MessageBroker:Username and MessageBroker:Password must be configured.");
-}
-
-builder.Services.AddMassTransit(configurator =>
-{
-    // Consumerهای رویدادهای Booking
-    configurator.AddConsumer<BookingConfirmedConsumer>();
-    configurator.AddConsumer<BookingFailedConsumer>();
-    configurator.AddConsumer<BookingCancellationStartedConsumer>();
-    configurator.AddConsumer<BookingCancelledConsumer>();
-
-    // Consumerهای رویدادهای Payment
-    configurator.AddConsumer<PaymentAuthorizedConsumer>();
-    configurator.AddConsumer<PaymentFailedConsumer>();
-    configurator.AddConsumer<PaymentRefundedConsumer>();
-
-    configurator.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(brokerHost, brokerVirtualHost, host =>
-        {
-            host.Username(brokerUsername);
-            host.Password(brokerPassword);
-        });
-
-        RabbitMqTopology.ConfigureMessageTopology(cfg);
-
-        cfg.ReceiveEndpoint(EventQueueNames.NotificationEvents, endpoint =>
-        {
-            // چون exchangeها را دستی bind می‌کنیم،
-            // MassTransit خودش topology پیش‌فرض ایجاد نکند.
-            endpoint.ConfigureConsumeTopology = false;
-
-            // اتصال صف Notification به exchangeهای رویدادها
-            endpoint.Bind(EventExchangeNames.BookingConfirmed);
-            endpoint.Bind(EventExchangeNames.BookingFailed);
-            endpoint.Bind(EventExchangeNames.BookingCancellationStarted);
-            endpoint.Bind(EventExchangeNames.BookingCancelled);
-            endpoint.Bind(EventExchangeNames.PaymentAuthorized);
-            endpoint.Bind(EventExchangeNames.PaymentFailed);
-            endpoint.Bind(EventExchangeNames.PaymentRefunded);
-
-            // اتصال consumerها به همان endpoint
-            endpoint.ConfigureConsumer<BookingConfirmedConsumer>(context);
-            endpoint.ConfigureConsumer<BookingFailedConsumer>(context);
-            endpoint.ConfigureConsumer<BookingCancellationStartedConsumer>(
-                context);
-            endpoint.ConfigureConsumer<BookingCancelledConsumer>(context);
-
-            endpoint.ConfigureConsumer<PaymentAuthorizedConsumer>(context);
-            endpoint.ConfigureConsumer<PaymentFailedConsumer>(context);
-            endpoint.ConfigureConsumer<PaymentRefundedConsumer>(context);
-        });
-    });
-});
-
-// -------------------- Build --------------------
-
+// ==========================================
+// 6. Application Pipeline (Middleware)
+// ==========================================
 var app = builder.Build();
 
 await DatabaseInitializer.InitializeAsync(
@@ -215,19 +192,12 @@ await DatabaseInitializer.InitializeAsync(
     app.Configuration,
     app.Lifetime.ApplicationStopping);
 
-// Middleware مدیریت Exception
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-// -------------------- Swagger UI --------------------
 
 if (app.Environment.IsDevelopment())
 {
-    // OpenAPI JSON:
-    // /swagger/v1/swagger.json
     app.UseSwagger();
 
-    // Swagger UI:
-    // /swagger
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(
@@ -238,15 +208,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// -------------------- Request Pipeline --------------------
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/health", () =>
-    Results.Ok(new { status = "ok" }));
 
 app.Run();
 

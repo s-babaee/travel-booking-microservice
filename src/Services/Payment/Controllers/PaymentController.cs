@@ -1,4 +1,5 @@
 using BuildingBlocks.Contracts.Integrations;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Api.Application.Contracts;
@@ -12,18 +13,21 @@ namespace Payment.Api.Controllers;
 public sealed class PaymentController(PaymentService service) : ControllerBase
 {
     [HttpPost("authorize")]
+    [HasPermission(PermissionCatalog.PaymentsInitiate)]
     public async Task<ActionResult<AuthorizePaymentResponse>> Authorize(
         AuthorizePaymentRequest request,
         CancellationToken cancellationToken) =>
         Ok(await service.AuthorizeAsync(request, cancellationToken));
 
     [HttpGet("{paymentId:guid}")]
+    [HasPermission(PermissionCatalog.PaymentsViewOwn)]
     public async Task<ActionResult<PaymentResponse>> Get(
         Guid paymentId,
         CancellationToken cancellationToken) =>
         Ok(await service.GetAsync(paymentId, cancellationToken));
 
     [HttpGet("booking/{bookingId:guid}")]
+    [HasPermission(PermissionCatalog.PaymentsViewOwn)]
     public async Task<ActionResult<IReadOnlyList<PaymentResponse>>> GetByBooking(
         Guid bookingId,
         CancellationToken cancellationToken) =>

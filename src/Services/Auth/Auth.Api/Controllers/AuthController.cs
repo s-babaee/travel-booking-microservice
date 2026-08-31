@@ -26,6 +26,7 @@ public sealed class AuthController : ControllerBase
         return Created($"/api/users/{user.UserId}", user);
     }
 
+
     [AllowAnonymous]
     [HttpPost("login")]
     public Task<AuthTokenResponse> Login(

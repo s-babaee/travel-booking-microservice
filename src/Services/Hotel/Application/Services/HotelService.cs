@@ -103,6 +103,19 @@ public sealed class HotelService : IHotelService
         return await BuildResponseAsync(hotel, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<HotelResponse>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var hotels = await _hotels.GetAllAsync(cancellationToken);
+
+        var responses = new List<HotelResponse>(hotels.Count);
+        foreach (var hotel in hotels)
+        {
+            responses.Add(await BuildResponseAsync(hotel, cancellationToken));
+        }
+
+        return responses;
+    }
+
     public async Task<HotelResponse> UpdateAsync(
         Guid hotelId,
         UpdateHotelRequest request,

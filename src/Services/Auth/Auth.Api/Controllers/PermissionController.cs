@@ -1,12 +1,13 @@
 using Auth.Api.Application.Abstractions;
 using Auth.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[HasPermission(PermissionCatalog.RolesManage)]
 [Route("api")]
 public sealed class PermissionController : ControllerBase
 {
@@ -26,11 +27,15 @@ public sealed class PermissionController : ControllerBase
         return Created($"/api/permissions/{permission.PermissionId}", permission);
     }
 
+
+
     [HttpGet("permissions")]
     public Task<IReadOnlyList<PermissionResponse>> List(CancellationToken cancellationToken)
     {
         return _permissionService.ListAsync(cancellationToken);
     }
+
+
 
     [HttpPut("permissions/{permissionId:guid}")]
     public Task<PermissionResponse> Update(
@@ -41,12 +46,16 @@ public sealed class PermissionController : ControllerBase
         return _permissionService.UpdateAsync(permissionId, command, cancellationToken);
     }
 
+
+
     [HttpDelete("permissions/{permissionId:guid}")]
     public async Task<IActionResult> Delete(Guid permissionId, CancellationToken cancellationToken)
     {
         await _permissionService.DeleteAsync(permissionId, cancellationToken);
         return NoContent();
     }
+
+
 
     [HttpPost("roles/{roleId:guid}/permissions/{permissionId:guid}")]
     public async Task<IActionResult> AssignToRole(
@@ -57,6 +66,8 @@ public sealed class PermissionController : ControllerBase
         await _permissionService.AssignToRoleAsync(roleId, permissionId, cancellationToken);
         return NoContent();
     }
+
+
 
     [HttpDelete("roles/{roleId:guid}/permissions/{permissionId:guid}")]
     public async Task<IActionResult> RemoveFromRole(

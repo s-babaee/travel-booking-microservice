@@ -18,6 +18,14 @@ namespace Auth.Api.Infrastructure.Persistence.Repositories
             return await _context.Roles.SingleOrDefaultAsync(role => role.Id == id && !role.IsDeleted, cancellationToken);
         }
 
+        public Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken)
+        {
+            var normalizedName = name.Trim();
+            return _context.Roles.SingleOrDefaultAsync(
+                role => role.Name == normalizedName && !role.IsDeleted,
+                cancellationToken);
+        }
+
         public async Task<IReadOnlyList<Role>> ListAsync(CancellationToken cancellationToken)
         {
             return await _context.Roles

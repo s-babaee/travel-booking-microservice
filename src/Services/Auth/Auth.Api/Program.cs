@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BuildingBlocks.Authorization;
 using Auth.Api.Application.Abstractions;
 using Auth.Api.Application.Services;
 using Auth.Api.Infrastructure.Keycloak;
@@ -59,29 +60,8 @@ builder.Services.AddScoped<IPasswordService, PasswordService>();
 // ==========================================
 // 4. Authentication & Authorization
 // ==========================================
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = keycloakAuthority;
-        options.RequireHttpsMetadata = builder.Environment.IsProduction();
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = keycloakAuthority,
-            ValidateAudience = false,
-            NameClaimType = "preferred_username",
-            RoleClaimType = ClaimTypes.Role
-        };
-    });
-
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("admin", policy => policy.RequireRole("admin"));
-});
+builder.Services.AddKeycloakJwt(builder.Configuration, builder.Environment);
+builder.Services.AddPermissionAuthorization();
 
 // ==========================================
 // 5. Web & Swagger Setup

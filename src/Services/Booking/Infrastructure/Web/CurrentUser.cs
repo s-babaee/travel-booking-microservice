@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Booking.Api.Application.Abstractions;
 using Booking.Api.Application.Exceptions;
+using BuildingBlocks.Authorization;
 
 namespace Booking.Api.Infrastructure.Web;
 
@@ -18,6 +19,6 @@ public sealed class CurrentUser(
                 "The access token does not contain a valid user id.");
     }
 
-    public bool IsAdmin() =>
-        httpContextAccessor.HttpContext?.User.IsInRole("admin") == true;
+    public bool HasPermission(string permission) =>
+        httpContextAccessor.HttpContext?.User.HasPermission(permission) == true;
 }

@@ -1,12 +1,13 @@
 using Auth.Api.Application.Abstractions;
 using Auth.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[HasPermission(PermissionCatalog.RolesManage)]
 [Route("api")]
 public sealed class RoleController : ControllerBase
 {
@@ -26,11 +27,15 @@ public sealed class RoleController : ControllerBase
         return Created($"/api/roles/{role.RoleId}", role);
     }
 
+
+
     [HttpGet("roles")]
     public Task<IReadOnlyList<RoleResponse>> List(CancellationToken cancellationToken)
     {
         return _roleService.ListAsync(cancellationToken);
     }
+
+
 
     [HttpPut("roles/{roleId:guid}")]
     public Task<RoleResponse> Update(
@@ -41,12 +46,16 @@ public sealed class RoleController : ControllerBase
         return _roleService.UpdateAsync(roleId, command, cancellationToken);
     }
 
+
+
     [HttpDelete("roles/{roleId:guid}")]
     public async Task<IActionResult> Delete(Guid roleId, CancellationToken cancellationToken)
     {
         await _roleService.DeleteAsync(roleId, cancellationToken);
         return NoContent();
     }
+
+
 
     [HttpPost("users/{userId:guid}/roles/{roleId:guid}")]
     public async Task<IActionResult> AssignToUser(
@@ -57,6 +66,8 @@ public sealed class RoleController : ControllerBase
         await _roleService.AssignToUserAsync(userId, roleId, cancellationToken);
         return NoContent();
     }
+
+
 
     [HttpDelete("users/{userId:guid}/roles/{roleId:guid}")]
     public async Task<IActionResult> RemoveFromUser(

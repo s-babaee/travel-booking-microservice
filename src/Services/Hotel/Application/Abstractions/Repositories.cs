@@ -24,6 +24,8 @@ public interface IHotelRepository
         Guid? excludingId,
         CancellationToken cancellationToken);
     Task AddAsync(HotelEntity hotel, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<HotelEntity>> GetAllAsync(CancellationToken cancellationToken);
 }
 
 public interface IRoomTypeRepository

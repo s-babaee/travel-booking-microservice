@@ -10,6 +10,9 @@ public interface IHotelService
     Task<HotelResponse> GetAsync(
         Guid hotelId,
         CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<HotelResponse>> GetAllAsync(CancellationToken cancellationToken);
+
     Task<HotelResponse> UpdateAsync(
         Guid hotelId,
         UpdateHotelRequest request,

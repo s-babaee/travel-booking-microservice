@@ -34,5 +34,20 @@ namespace Auth.Api.Infrastructure.Persistence.Repositories
                 _context.RolePermissions.Remove(rolePermission);
             }
         }
+
+        public async Task<IReadOnlyList<Permission>> GetPermissionsAsync(
+            Guid roleId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.RolePermissions
+                .Where(item => item.RoleId == roleId)
+                .Join(
+                    _context.Permissions.Where(permission => !permission.IsDeleted),
+                    item => item.PermissionId,
+                    permission => permission.Id,
+                    (_, permission) => permission)
+                .OrderBy(permission => permission.Code)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

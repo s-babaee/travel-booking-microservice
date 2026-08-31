@@ -1,12 +1,13 @@
 using Hotel.Api.Application.Abstractions;
 using Hotel.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "admin")]
+[Authorize]
 [Route("api/hotels/{hotelId:guid}/images")]
 public sealed class HotelImageController : ControllerBase
 {
@@ -18,6 +19,7 @@ public sealed class HotelImageController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(HotelImageResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<HotelImageResponse>> Add(
@@ -36,7 +38,10 @@ public sealed class HotelImageController : ControllerBase
             response);
     }
 
+
+
     [HttpGet]
+    [HasPermission(PermissionCatalog.HotelsView)]
     [ProducesResponseType(typeof(IReadOnlyList<HotelImageResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<HotelImageResponse>>> List(
         Guid hotelId,
@@ -47,7 +52,10 @@ public sealed class HotelImageController : ControllerBase
             cancellationToken));
     }
 
+
+
     [HttpDelete("{imageId:guid}")]
+    [HasPermission(PermissionCatalog.HotelsUpdate)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(
         Guid hotelId,

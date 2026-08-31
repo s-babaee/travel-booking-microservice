@@ -1,5 +1,6 @@
 using Auth.Api.Application.Abstractions;
 using Auth.Api.Application.Contracts;
+using BuildingBlocks.Authorization;
 using Auth.Api.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ public sealed class PasswordController : ControllerBase
         _passwordService = passwordService;
     }
 
+    /*
     [AllowAnonymous]
     [HttpPost("forgot")]
     public Task<PasswordResetResponse> Forgot(
@@ -25,7 +27,9 @@ public sealed class PasswordController : ControllerBase
     {
         return _passwordService.ForgotAsync(command, cancellationToken);
     }
+    */
 
+    /*
     [AllowAnonymous]
     [HttpPost("reset")]
     public async Task<IActionResult> Reset(
@@ -35,8 +39,9 @@ public sealed class PasswordController : ControllerBase
         await _passwordService.ResetAsync(command, cancellationToken);
         return NoContent();
     }
+    */
 
-    [Authorize]
+    [HasPermission(PermissionCatalog.ProfileUpdateOwn)]
     [HttpPost("change")]
     public async Task<IActionResult> Change(
         ChangePasswordCommand command,

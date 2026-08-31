@@ -11,5 +11,10 @@ public static class DatabaseInitializer
         await using var scope = services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.MigrateAsync(cancellationToken);
+        await AuthorizationSeeder.SeedAsync(
+            dbContext,
+            scope.ServiceProvider.GetRequiredService<
+                Application.Abstractions.IIdentityProvider>(),
+            cancellationToken);
     }
 }

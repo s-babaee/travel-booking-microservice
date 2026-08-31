@@ -1,4 +1,5 @@
 using BuildingBlocks.Contracts.Integrations;
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Api.Application.Contracts;
@@ -13,6 +14,7 @@ namespace Payment.Api.Controllers;
 public sealed class RefundController(PaymentService service) : ControllerBase
 {
     [HttpPost("{paymentId:guid}/refund")]
+    [HasPermission(PermissionCatalog.PaymentsRefund)]
     public async Task<ActionResult<RefundApiResponse>> Refund(
         Guid paymentId,
         RefundPaymentRequest request,
@@ -22,6 +24,7 @@ public sealed class RefundController(PaymentService service) : ControllerBase
             cancellationToken));
 
     [HttpGet("~/api/refunds/{refundId:guid}")]
+    [HasPermission(PermissionCatalog.PaymentsViewOwn)]
     public async Task<ActionResult<RefundApiResponse>> Get(
         Guid refundId,
         CancellationToken cancellationToken)

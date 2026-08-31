@@ -261,6 +261,14 @@ public sealed class AppDbContext : DbContext,
         return Hotels.AddAsync(hotel, cancellationToken).AsTask();
     }
 
+    public async Task<IReadOnlyList<HotelEntity>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        return await Hotels
+            .AsNoTracking()
+            .Where(hotel => !hotel.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
     async Task<RoomType?> IRoomTypeRepository.GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken)
